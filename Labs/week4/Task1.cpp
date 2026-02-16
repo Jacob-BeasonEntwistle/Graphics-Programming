@@ -115,9 +115,9 @@ void drawMesh(std::vector<unsigned char>& image, const Mesh& mesh,
 		// The matrix is 4x4, and the v0, v1, v2 are 3D! You'll need to convert them to 4D 
 		// homogeneous vectors first (add a 1 in the w component).
 		// You can use the vec3ToVec4 function above to do this.
-		tv0 = Eigen::Vector4f::Zero();
-		tv1 = Eigen::Vector4f::Zero();
-		tv2 = Eigen::Vector4f::Zero();
+		tv0 = transform * vec3ToVec4(v0);
+		tv1 = transform * vec3ToVec4(v1);
+		tv2 = transform * vec3ToVec4(v2);
 
 		Eigen::Vector2f p0(tv0.x() * 250 + width / 2, -tv0.y() * 250 + height / 2);
 		Eigen::Vector2f p1(tv1.x() * 250 + width / 2, -tv1.y() * 250 + height / 2);
@@ -143,14 +143,26 @@ void drawMesh(std::vector<unsigned char>& image, const Mesh& mesh,
 Eigen::Matrix4f translationMatrix(const Eigen::Vector3f& t)
 {
 	// *** Your code here ***
-	return Eigen::Matrix4f::Identity();
+	Eigen::Matrix4f translate;
+	translate <<
+		1, 0, 0, t.x(),
+		0, 1, 0, t.y(),
+		0, 0, 1, t.z(),
+		0, 0, 0, 1;
+	return translate;
 }
 
 // Implement this function that makes a uniform scaling matrix
 Eigen::Matrix4f scaleMatrix(float s)
 {
 	// *** Your code here ***
-	return Eigen::Matrix4f::Identity();
+	Eigen::Matrix4f scale;
+	scale <<
+		s, 0, 0, 0,
+		0, s, 0, 0,
+		0, 0, s, 0,
+		0, 0, 0, 1;
+	return scale;
 }
 
 // Implement this function that makes a rotation matrix around the y
@@ -159,7 +171,18 @@ Eigen::Matrix4f scaleMatrix(float s)
 Eigen::Matrix4f rotateYMatrix(float theta)
 {
 	// *** Your code here ***
-	return Eigen::Matrix4f::Identity();
+	float radians = theta * (M_PI / 180);
+
+	const float cosRadians = std::cos(radians);
+	const float sinRadians = std::sin(radians);
+
+	Eigen::Matrix4f rotateY;
+	rotateY <<
+		cosRadians, 0, sinRadians, 0,
+		0, 1, 0, 0,
+		-sinRadians, 0, cosRadians, 0,
+		0, 0, 0, 1;
+	return rotateY;
 }
 
 int main()
@@ -186,9 +209,7 @@ int main()
 
 	// Subtask: Try making a 2D vector of ints using the template <> syntax.
 	// Is there a handy typedef for this too?
-
 	// [NOTE]: Matrix<type, rows, columns>
-
 	Eigen::Matrix<int, 2, 1> myVector;
 	Eigen::Vector2i myVector2(0, 1);
 
@@ -244,7 +265,7 @@ int main()
 		1, 1, 1,
 		1, 1, 1;
 	myMat4.block<3, 3>(0, 0) = myMat3;
-	std::cout << "myMat4: " << myMat4 << std::endl;
+	std::cout << "myMat4: \n" << myMat4 << std::endl;
 	// Note the numbers in the triangle brackets say how many rows and columns to get
 	// The round brackets give the row, column of the top left corner of the block.
 #pragma endregion
@@ -278,7 +299,11 @@ int main()
 	// TIP: Think about the order of your transforms. Do you want to rotate first,
 	//      scale first, or translate first? Does the order matter?
 
-	Eigen::Matrix4f bunnyTransform = Eigen::Matrix4f::Identity();
+	Eigen::Vector3f bunnyCoords(1, 1, 1);
+	float bunnyRotation = 45.0f;
+	float bunnyScale = 1.0f;
+
+	Eigen::Matrix4f bunnyTransform = translationMatrix(bunnyCoords) * rotateYMatrix(bunnyRotation) * scaleMatrix(bunnyScale);
 	Eigen::Matrix4f dragonTransform = Eigen::Matrix4f::Identity();
 
 	// =========== TASK 4 ==============
