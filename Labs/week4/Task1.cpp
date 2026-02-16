@@ -187,6 +187,11 @@ int main()
 	// Subtask: Try making a 2D vector of ints using the template <> syntax.
 	// Is there a handy typedef for this too?
 
+	// [NOTE]: Matrix<type, rows, columns>
+
+	Eigen::Matrix<int, 2, 1> myVector;
+	Eigen::Vector2i myVector2(0, 1);
+
 	// Matrices
 	// For the matrix sizes we'll commonly use (3x3 and 4x4) Eigen has typedefs for these too:
 	Eigen::Matrix3f myThreeByThreeMatrix;
@@ -216,9 +221,12 @@ int main()
 		0, 4, 0,
 		0, 0, 1;
 	Eigen::Matrix3f myInverse = myThreeByThreeMatrix.inverse();
+	std::cout << "myInverse: \n" << myInverse << std::endl;
 
 	// Subtask 3: Try multiplying myThreeByThreeMatrix by myInverse
+	Eigen::Matrix3f mult = myThreeByThreeMatrix * myInverse;
 	// Print out the result.
+	std::cout << "myThreeByThreeMatrix * myInverse: \n" << mult << std::endl;
 	// Is it what you would expect?
 
 	// Final advanced tip: the .block<>() function
