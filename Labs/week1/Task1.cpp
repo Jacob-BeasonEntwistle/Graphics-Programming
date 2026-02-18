@@ -56,13 +56,15 @@ int main()
 	}
 
 	// [TASK 3: Answer]
-	int radius = 10;
+	int radius = 500;
 	float centerX = width * 0.5f;
 	float centerY = height * 0.5f;
 
 	for (int y = 0; y < height; ++y) {
 		for (int x = 0; x < width; ++x) {
-			if (sqrt((x - (int)centerX) ^ 2 + (y - (int)centerY) ^ 2) < radius) {
+			// Previously used sqrt() and ^ 2 thinking that would get the square root of the square
+			// ^ 2 doesn't work the way I assumed, ^ means XOR not squared by
+			if ((((x - centerX) * (x - centerX)) + ((y - centerY) * (y - centerY))) < radius) {
 				setPixel(imageBuffer.data(), x, y, 0, 0, 0, 255);
 			}
 		}
@@ -92,7 +94,7 @@ int main()
 //           (We will use this setPixel function to build our rasteriser in the upcoming labs.)
 //			 - Test your setPixel function by setting pixels in your image to different colours.
 
-// * (Optional) Task 3: Use your setPixel function to draw a circle in the centre of the image. Remember a point is
+// * (DONE) Task 3: Use your setPixel function to draw a circle in the centre of the image. Remember a point is
 //           in a circle if sqrt((x - x_0)^2 + (y - y_0)^2) < radius (here x_0, y_0 are the coordinates at the middle of 
 //           the circle). 
 //           Hint - use a similar for loop to the one above, and add an if statement to check if the current
