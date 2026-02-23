@@ -43,7 +43,7 @@ int main()
 	memset(&imageBuffer[0], 0, width * height * nChannels * sizeof(uint8_t));
 
 	std::string bunnyFilename = "../models/stanford_bunny_simplified.obj";
-
+	
 	std::ifstream bunnyFile(bunnyFilename);
 
 	// *** Task 2 ***
@@ -60,7 +60,8 @@ int main()
 	
 	// This while loop processes all the lines of the file
 	std::string line;
-	while (!bunnyFile.eof())
+	//while (!bunnyFile.eof())
+	while (std::getline(bunnyFile, line))
 	{
 		std::getline(bunnyFile, line);
 		// *** YOUR CODE HERE ***
@@ -79,7 +80,7 @@ int main()
 		// 5. Then you create a new vector3 (Vector3 is the type, then you give it a name like "newVector")
 		// 6. Then you extract the x (0), y (1), and z (2) values and put them into the newVector
 		// 7. Finally you can push the new Vector3 into the list of vertices
-		if (line[0] == 'v' && line[1] == ' ') {
+		if (!line.empty() && line[0] == 'v' && line[1] == ' ') {
 			std::stringstream linestream(line);
 			char vCharacter;
 			linestream >> vCharacter;
@@ -102,9 +103,13 @@ int main()
 		//         big enough to see.
 
 		// *** YOUR CODE HERE ***
+		int scale = 200;
+		int screenX = static_cast<int>(v.x() * scale + width / 2);
+		int screenY = static_cast<int>(height / 2 - v.y() * scale);
 
-
-		setPixel(imageBuffer, v[0], v[1], width, height, 255, 255, 255, 255);
+		if (screenX >= 0 && screenX < width && screenY >= 0 && screenY < height) {
+			setPixel(imageBuffer, (int)screenX, (int)screenY, width, height, 255, 255, 255, 255);
+		}
 	}
 
 

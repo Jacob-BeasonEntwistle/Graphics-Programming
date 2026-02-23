@@ -69,7 +69,7 @@ public:
 		// This one should be quite easy - remember the intensity of an ambient
 		// light is the same everywhere!
 		// *** YOUR CODE HERE ***
-		return Eigen::Vector3f::Zero();
+		return _intensity;
 		// *** END YOUR CODE ***
 	}
 
@@ -82,6 +82,7 @@ public:
 	{
 		// Ambient lights do not have a direction, so throw an error!
 		// *** YOUR CODE HERE ***
+		std::cerr << "Error: Ambient lights don't have a direction!" << std::endl;
 		return Eigen::Vector3f::Zero();
 		// *** END YOUR CODE ***
 	}
@@ -90,6 +91,7 @@ public:
 	{
 		// Ambient lights do not have a location, so throw an error!
 		// *** YOUR CODE HERE ***
+		std::cerr << "Error: Ambient lights don't have a location!" << std::endl;
 		return Eigen::Vector3f::Zero();
 		// *** END YOUR CODE ***
 	}
@@ -113,7 +115,7 @@ public:
 		// This one should also be quite easy - the intensity of an directional
 		// light is also the same everywhere!
 		// *** YOUR CODE HERE ***
-		return Eigen::Vector3f::Zero();
+		return _intensity;
 		// *** END YOUR CODE ***
 	}
 
@@ -126,7 +128,7 @@ public:
 	{
 		// Directional lights *do* have a direction, so return it!
 		// *** YOUR CODE HERE ***
-		return Eigen::Vector3f::Zero();
+		return _direction;
 		// *** END YOUR CODE ***
 	}
 
@@ -134,6 +136,7 @@ public:
 	{
 		// Directional lights do not have a location, so throw an error!
 		// *** YOUR CODE HERE ***
+		std::cerr << "Error: Directional lights don't have a location!" << std::endl;
 		return Eigen::Vector3f::Zero();
 		// *** END YOUR CODE ***
 	}
@@ -163,7 +166,11 @@ public:
 		// Then multiply the intensity by 1/distance^2, following the inverse
 		// square law.
 		// *** YOUR CODE HERE ***
-		return Eigen::Vector3f::Zero();
+		Eigen::Vector3f distance = _location - surfaceLocation;
+		// Need a scalar distance to apply the inverse square
+		float d = distance.norm();
+		float attenuation = 1 / (d * d);
+		return _intensity * attenuation;
 		// *** END YOUR CODE ***
 	}
 
@@ -179,14 +186,15 @@ public:
 		// the surface location.
 		// Don't forget to normalize it!
 		// *** YOUR CODE HERE ***
-		return Eigen::Vector3f::Zero();
+		Eigen::Vector3f lightToSurface = (surfaceLocation - _location).normalized();
+		return lightToSurface;
 		// *** END YOUR CODE ***
 	}
 
 	virtual Eigen::Vector3f getLightLocation() override
 	{
 		// *** YOUR CODE HERE ***
-		return Eigen::Vector3f::Zero();
+		return _location;
 		// *** END YOUR CODE ***
 	}
 };	
