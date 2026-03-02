@@ -50,13 +50,13 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 		minX = 0;
 	}
 	if (maxX > width) {
-		maxX = width;
+		maxX = width - 1;
 	}
 	if (minY < 0) {
 		minY = 0;
 	}
 	if (maxY > height) {
-		maxY = height;
+		maxY = height - 1;
 	}
 
 	// Find vectors going along two edges of the triangle
@@ -104,22 +104,21 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 			float b1;
 			float b2;
 
-			b0 = a0 / triangleArea;
-			b1 = a1 / triangleArea;
-			b2 = a2 / triangleArea;
+			// std::abs - ensures numbers are positive even if negative
+			b0 = std::abs(a0) / std::abs(triangleArea);
+			b1 = std::abs(a1) / std::abs(triangleArea);
+			b2 = std::abs(a2) / std::abs(triangleArea);
 
 			// Check if the sum of b0, b1, b2 is bigger than 1 (or ideally a number just over 1 
 			// to account for numerical error).
 			// If it's bigger, skip to the next pixel as we are outside the triangle.
 			// YOUR CODE HERE
-			float sum;
+			float sum = b0 + b1 + b2;
 
-			sum = b0 + b1 + b2;
-			if (sum > 1) {
-				x++;
+			if (sum <= 1.00001) {
+				// Now we're sure we're inside the triangle, and we can draw this pixel!
+				setPixel(image, x, y, width, height, r, g, b, a);
 			}
-			// Now we're sure we're inside the triangle, and we can draw this pixel!
-			setPixel(image, x, y, width, height, r, g, b, a);
 		}
 }
 
@@ -178,7 +177,8 @@ int main()
 
 		// Task 3: Draw the bunny!
 		// Now you've finished your triangle drawing function, you'll see a red bunny, drawn using the code below:
-		drawTriangle(imageBuffer, width, height, p0, p1, p2, 255, 0, 0, 255);
+		
+		//drawTriangle(imageBuffer, width, height, p0, p1, p2, 255, 0, 0, 255);
 
 		// This is a bit boring. Try replacing this code to draw two different bunny types.
 
@@ -187,6 +187,12 @@ int main()
 		// the rand() function in C++.
 		// Hint: Remember rand() returns an int, but we want our colour values to lie between 0 and 255.
 		// How can we make sure our random r, g, b values stick to the right range?
+		
+		float r = rand() % 256;
+		float g = rand() % 256;
+		float b = rand() % 256;
+
+		//drawTriangle(imageBuffer, width, height, p0, p1, p2, r, g, b, 255);
 
 		// Bunny 2: (Sort of) Diffuse Lighting Bunny
 		// For the final task we'll do a bit of a preview of session 5 on diffuse lighting.
@@ -194,10 +200,29 @@ int main()
 		// 
 		// To do this, first find a vector pointing out at 90 degrees from the triangle, and normalise it
 		// This special perpendicular vector is called the triangle's *normal*.
-		//
+		
+		Vector3 v0 = vertices[face[0]];
+		Vector3 v1 = vertices[face[1]];
+		Vector3 v2 = vertices[face[2]];
+
+		Vector3 edge1 = v1 - v0;
+		Vector3 edge2 = v2 - v0;
+
+		Vector3 normal = edge2.cross(edge1).normalized();
+
 		// Once you have your normal, take the dot product with (0,0,1). This will effectively measure how much
 		// the normal points down the positive z-axis.
 		// Use this value to set the brightness of the triangle (remember to scale it back to the [0,255] range).
+
+		float brightness = normal.dot(Vector3(0, 0, 1));
+		brightness = std::max(0.0f, brightness);
+
+		// Scale the randomised RGB values to [0,1]
+		uint8_t finalR = static_cast<uint8_t>(r * brightness);
+		uint8_t finalG = static_cast<uint8_t>(g * brightness);
+		uint8_t finalB = static_cast<uint8_t>(b * brightness);
+
+		drawTriangle(imageBuffer, width, height, p0, p1, p2, finalR, finalG, finalB, 255);
 	}
 
 

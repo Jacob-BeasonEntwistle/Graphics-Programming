@@ -53,7 +53,11 @@ public:
 	{
 		// YOUR CODE HERE
 		// Implement the cross product, following the formula from the slides.
-		Vector3 output(y_ * other.y() - z_ * other.y(), x_ * other.z() - other.x() * z_, x_ * other.y() - y_ * other.x());
+		float x = y_ * other.z() - z_ * other.y();
+		float y = z_ * other.x() - x_ * other.z();
+		float z = x_ * other.y() - y_ * other.x();
+
+		Vector3 output(x, y, z);
 		return output;
 	}
 
@@ -61,7 +65,7 @@ public:
 	{
 		// YOUR CODE HERE
 		// Implement the dot product, following the formula from the slides.
-		float output(x_ * other.x() + y_ * other.y_ + z_ * other.z());
+		float output(x_ * other.x() + y_ * other.y() + z_ * other.z());
 		return output;
 	}
 

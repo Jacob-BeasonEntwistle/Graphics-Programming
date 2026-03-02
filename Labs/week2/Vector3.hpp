@@ -30,9 +30,9 @@ public:
 	Vector3(float x, float y, float z)
 	{
 		// YOUR CODE HERE
-		x_ = x;
-		y_ = y;
-		z_ = z;
+		x = x_;
+		y = y_;
+		z = z_;
 	}
 
 	// Implement this method to add two vectors.
