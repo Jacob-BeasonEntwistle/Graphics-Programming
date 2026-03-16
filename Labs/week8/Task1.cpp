@@ -14,9 +14,9 @@
 // In this week's lab, in Task 1 we'll first implement the Phong reflection model, to draw a shiny bunny mesh.
 // In Task 2, we'll also implement the Blinn-Phong model, and compare the two to see the differences in how they perform.
 // This Task1.cpp just contains Task 1, with the following Subtasks:
-// Subtask 1: Implement the Reflect function in Shading.hpp, so you can find the reflected vector.
-// Subtask 2: Implement the Phong specular term in Shading.hpp, to find the intensity of specular reflection
-// Subtask 3: Work out correct inputs for the phongSpecularTerm function inside drawTriangle, and draw an image!
+// [DONE] Subtask 1: Implement the Reflect function in Shading.hpp, so you can find the reflected vector.
+// [DONE] Subtask 2: Implement the Phong specular term in Shading.hpp, to find the intensity of specular reflection
+// [DONE] Subtask 3: Work out correct inputs for the phongSpecularTerm function inside drawTriangle, and draw an image!
 // Subtask 4: Try re-rendering your image with different lighting setups, and specular exponents, and see how it changes!
 
 struct Triangle {
@@ -122,11 +122,11 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 					// Subtask 3: Work out correct inputs for the phongSpecularTerm function inside drawTriangle, and draw an image!
 					// *** YOUR CODE HERE ***
 					// Work out the incoming light dir (from the light into the surface point).
-					Eigen::Vector3f incomingLightDir = Eigen::Vector3f::Zero();
+					Eigen::Vector3f incomingLightDir = light->getDirection(normP);
 					// Work out the view direction (from surface point towards camera). Make sure it's normalized!
-					Eigen::Vector3f viewDir = Eigen::Vector3f::Zero();
+					Eigen::Vector3f viewDir = camWorldPos;
 					// Find the specular term by calling phongSpecularTerm.
-					float specularTerm = 0.f;
+					float specularTerm = phongSpecularTerm(incomingLightDir, normP, viewDir, specularExponent);
 					// *** END YOUR CODE ***
 
 					Eigen::Vector3f specularOut = specularColor * specularTerm;
