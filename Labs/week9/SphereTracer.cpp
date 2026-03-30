@@ -11,7 +11,7 @@
 // =========== Week 9 Lab ==============
 // Let's make our ultimate Sphere tracer!
 //
-// Task 1: Add Ray-Sphere intersection
+// [DONE] Task 1: Add Ray-Sphere intersection
 // Task 2: Find the sphere normal
 // Task 3: Try raytracing your scene - you should see your first raytraced spheres!
 // Task 4: Add mirror reflection
@@ -86,8 +86,50 @@ bool raySphereIntersection(const Ray& ray, const Sphere& sphere, Vector3f& inter
 	//   a. If such a t exists, set the value of "intersection" and "t" and return true.
 	//   b. If no such t exists, return false.
 
-	// Remove this existing code, that just always returns false.
-	return false;
+	// Forms the vector from the sphere center to the ray origin
+	Vector3f v = ray.origin - sphere.centre;
+	
+	// Quadratic coefficient A: depends on ray direction. It equals 1 if ray.direction is normalized.
+	// This is the coefficient of t^2 after expanding ||v + td||^2 = r^2
+	float A = ray.direction.dot(ray.direction);
+
+	// Quadratic coefficient B: how much v lines up with the ray direction.
+	// This is the coefficient of t in the quadratic. The factor 2 comes from expanding the dot product
+	// (v + td) DOT (v + td) = v DOT v + 2tv DOT d + t^2d DOT d
+	float B = 2.0f * v.dot(ray.direction);
+
+	// Quadratic coefficient C: distance from ray origin to sphere centre, minus the sphere radius
+	// This is the constant term in the quadratic
+	float C = v.dot(v) - sphere.radius * sphere.radius;
+
+	// Check whether the ray actually hits the sphere, if discriminant < 0: no real intersection points.
+	// Determines whether quadratic has 0, 1, or 2 real solutions
+	float discriminant = B * B - 4.0f * A * C;
+
+	// Early exit if ray misses the sphere
+	if (discriminant < 0.0f) return false;	// There are no solutions
+
+	// Square root of the discriminant, used to compute the two roots efficiently
+	float sqrtD = std::sqrt(discriminant);
+
+	// Solves quadratic for the two intersection parameters (t1 and t2)
+	// - The minus root (- sqrtD) corresponds to the entry point (closest point)
+	// - The plus root (+ sqrtD) corresponds to the exit point (farther point)
+	float t1 = (-B - sqrtD) / (2.0f * A);
+	float t2 = (-B + sqrtD) / (2.0f * A);
+
+	float tHit;
+
+	// Check the two possible hit times along the ray and pick the closest valid hit that's in front of the camera
+	if (t1 > minT) tHit = t1;
+	else if (t2 > minT) tHit = t2;
+	else return false;
+
+	// Plug t back into the ray equation to get the 3D point
+	t = tHit;
+	intersection = ray.origin + t * ray.direction;
+
+	return true;
 	// *** END YOUR CODE ***
 } 
 
