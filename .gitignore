@@ -7,6 +7,9 @@
 *.o
 *.obj
 
+# Make an exception for any .obj files in the models folder
+!models/*.obj
+
 # Precompiled Headers
 *.gch
 *.pch

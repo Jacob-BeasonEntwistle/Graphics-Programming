@@ -45,7 +45,7 @@ int main()
 	Eigen::Matrix4f projection = projectionMatrix(height, width);
 
 	// This matrix rotates the camera, tilting it down, then translates it up to make it look down on the scene.
-	Eigen::Matrix4f cameraToWorld = translationMatrix(Eigen::Vector3f(0.f, 0.8f, 0.f)) * rotateXMatrix(0.4f);
+	Eigen::Matrix4f cameraToWorld = translationMatrix(Eigen::Vector3f(0.f, 1.5f, 5.0f)) * rotateXMatrix(-0.2f) * rotateYMatrix(M_PI);
 
 	Eigen::Vector3f camWorldPos = (cameraToWorld * Eigen::Vector4f(0, 0, 0, 1)).block<3, 1>(0, 0);
 
@@ -58,8 +58,14 @@ int main()
 
 
 	// --[SETTING THE FILENAMES OF EACH OBJECT]--
-	std::string bunnyFilename = "../models/stanford_bunny_texmapped.obj";
-	std::string planeFilename = "../models/plane.obj";
+	std::string bookshelfFilename = "../../../models/Bookshelf.obj";
+	std::string coffeetableFilename = "../../../models/Coffee_table.obj";
+	std::string shelfFilename = "../../../models/Shelf.obj";
+	std::string sofaFilename = "../../../models/Sofa.obj";
+	std::string tvFilename = "../../../models/TV.obj";
+	std::string tvstandFilename = "../../../models/TV_stand.obj";
+	std::string windowframeFilename = "../../../models/Window_frame.obj";
+	std::string windowpaneFilename = "../../../models/Window_pane.obj";
 
 
 
@@ -71,24 +77,64 @@ int main()
 
 
 	// --[LOADING THE MESHES]--
-	Mesh bunnyMesh = loadMeshFile(bunnyFilename);
-	Mesh planeMesh = loadMeshFile(planeFilename);
-
-
+	Mesh bookshelfMesh = loadMeshFile(bookshelfFilename);
+	Mesh coffeetableMesh = loadMeshFile(coffeetableFilename);
+	Mesh shelfMesh = loadMeshFile(shelfFilename);
+	Mesh sofaMesh = loadMeshFile(sofaFilename);
+	Mesh tvMesh = loadMeshFile(tvFilename);
+	Mesh tvstandMesh = loadMeshFile(tvstandFilename);
+	Mesh windowframeMesh = loadMeshFile(windowframeFilename);
+	Mesh windowpaneMesh = loadMeshFile(windowpaneFilename);
 
 	// --[POSITIONING THE MESHES]--
-	Eigen::Matrix4f bunnyTransform;
-	bunnyTransform = translationMatrix(Eigen::Vector3f(0.0f, -1.0f, 3.f)) * rotateYMatrix(M_PI);
+	Eigen::Matrix4f bookshelfTransform;
+	bookshelfTransform = translationMatrix(Eigen::Vector3f(0.0f, 0.0f, 2.23)) * scaleMatrix(1.0f);
 	// .... and change the specular exponent here!
-	drawMesh(imageBuffer, zBuffer, bunnyMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
+	drawMesh(imageBuffer, zBuffer, bookshelfMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
 		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
-		bunnyTransform, worldToClip, lights, width, height);
+		bookshelfTransform, worldToClip, lights, width, height);
 
-	Eigen::Matrix4f planeTransform;
-	planeTransform = translationMatrix(Eigen::Vector3f(0.0f, -1.0f, 3.f)) * scaleMatrix(1.4f);
-	drawMesh(imageBuffer, zBuffer, planeMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
+	Eigen::Matrix4f coffeetableTransform;
+	coffeetableTransform = translationMatrix(Eigen::Vector3f(0.0f, 0.0f, 2.23)) * scaleMatrix(1.0f);
+	drawMesh(imageBuffer, zBuffer, coffeetableMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
 		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
-		planeTransform, worldToClip, lights, width, height);
+		coffeetableTransform, worldToClip, lights, width, height);
+
+	Eigen::Matrix4f shelfTransform;
+	shelfTransform = translationMatrix(Eigen::Vector3f(0.0f, 0.0f, 2.23)) * scaleMatrix(1.0f);
+	drawMesh(imageBuffer, zBuffer, shelfMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
+		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
+		shelfTransform, worldToClip, lights, width, height);
+
+	Eigen::Matrix4f sofaTransform;
+	sofaTransform = translationMatrix(Eigen::Vector3f(0.0f, 0.0f, 2.23)) * scaleMatrix(1.0f);
+	drawMesh(imageBuffer, zBuffer, sofaMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
+		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
+		sofaTransform, worldToClip, lights, width, height);
+
+	Eigen::Matrix4f tvTransform;
+	tvTransform = translationMatrix(Eigen::Vector3f(0.0f, 0.0f, 2.23)) * scaleMatrix(1.0f);
+	drawMesh(imageBuffer, zBuffer, tvMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
+		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
+		tvTransform, worldToClip, lights, width, height);
+
+	Eigen::Matrix4f tvstandTransform;
+	tvstandTransform = translationMatrix(Eigen::Vector3f(0.0f, 0.0f, 2.23)) * scaleMatrix(1.0f);
+	drawMesh(imageBuffer, zBuffer, tvstandMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
+		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
+		tvstandTransform, worldToClip, lights, width, height);
+
+	Eigen::Matrix4f windowframeTransform;
+	windowframeTransform = translationMatrix(Eigen::Vector3f(0.0f, 0.0f, 2.23)) * scaleMatrix(1.0f);
+	drawMesh(imageBuffer, zBuffer, windowframeMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
+		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
+		windowframeTransform, worldToClip, lights, width, height);
+
+	Eigen::Matrix4f windowpaneTransform;
+	windowpaneTransform = translationMatrix(Eigen::Vector3f(0.0f, 0.0f, 2.23)) * scaleMatrix(1.0f);
+	drawMesh(imageBuffer, zBuffer, windowpaneMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
+		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
+		windowpaneTransform, worldToClip, lights, width, height);
 
     // Save the image
     int errorCode;

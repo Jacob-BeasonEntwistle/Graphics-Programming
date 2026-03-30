@@ -55,11 +55,19 @@ Mesh loadMeshFile(const std::string& filename)
 			unsigned int idx, idxTex, idxNorm;
 			int i = 0;
 			while (lineSS >> idx >> ignoreChar >> idxTex >> ignoreChar >> idxNorm) {
+				//// Checks that the models loaded are made up of triangles
+				//if (i < 3) {
+				//	
+				//}
 				vFace[i] = idx - 1;
 				nFace[i] = idxNorm - 1;
 				tFace[i] = idxTex - 1;
 				++i;
 			}
+			//// Writes to the console which model has faces with more than 3 vertices
+			//if (i != 3) {
+			//	std::cout << "Non-triangle face in file: " << filename << " at line: " << line << std::endl;
+			//}
 			if (i > 0) {
 				mesh.vFaces.push_back(vFace);
 				mesh.nFaces.push_back(nFace);
