@@ -45,7 +45,7 @@ int main()
 	Eigen::Matrix4f projection = projectionMatrix(height, width);
 
 	// This matrix rotates the camera, tilting it down, then translates it up to make it look down on the scene.
-	Eigen::Matrix4f cameraToWorld = translationMatrix(Eigen::Vector3f(0.f, 1.5f, 5.0f)) * rotateXMatrix(-0.2f) * rotateYMatrix(M_PI);
+	Eigen::Matrix4f cameraToWorld = translationMatrix(Eigen::Vector3f(0.f, 1.0f, 0.0f)) * rotateXMatrix(0.26f);
 
 	Eigen::Vector3f camWorldPos = (cameraToWorld * Eigen::Vector4f(0, 0, 0, 1)).block<3, 1>(0, 0);
 
@@ -86,52 +86,55 @@ int main()
 	Mesh windowframeMesh = loadMeshFile(windowframeFilename);
 	Mesh windowpaneMesh = loadMeshFile(windowpaneFilename);
 
+	// Where in space to put the scene
+	Eigen::Vector3f sceneOrigin(0.0f, -1.0f, 5.0f);
+
 	// --[POSITIONING THE MESHES]--
 	Eigen::Matrix4f bookshelfTransform;
-	bookshelfTransform = translationMatrix(Eigen::Vector3f(0.0f, 0.0f, 2.23)) * scaleMatrix(1.0f);
+	bookshelfTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	// .... and change the specular exponent here!
 	drawMesh(imageBuffer, zBuffer, bookshelfMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
 		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
 		bookshelfTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f coffeetableTransform;
-	coffeetableTransform = translationMatrix(Eigen::Vector3f(0.0f, 0.0f, 2.23)) * scaleMatrix(1.0f);
+	coffeetableTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, coffeetableMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
 		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
 		coffeetableTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f shelfTransform;
-	shelfTransform = translationMatrix(Eigen::Vector3f(0.0f, 0.0f, 2.23)) * scaleMatrix(1.0f);
+	shelfTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, shelfMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
 		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
 		shelfTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f sofaTransform;
-	sofaTransform = translationMatrix(Eigen::Vector3f(0.0f, 0.0f, 2.23)) * scaleMatrix(1.0f);
+	sofaTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, sofaMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
 		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
 		sofaTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f tvTransform;
-	tvTransform = translationMatrix(Eigen::Vector3f(0.0f, 0.0f, 2.23)) * scaleMatrix(1.0f);
+	tvTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, tvMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
 		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
 		tvTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f tvstandTransform;
-	tvstandTransform = translationMatrix(Eigen::Vector3f(0.0f, 0.0f, 2.23)) * scaleMatrix(1.0f);
+	tvstandTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, tvstandMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
 		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
 		tvstandTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f windowframeTransform;
-	windowframeTransform = translationMatrix(Eigen::Vector3f(0.0f, 0.0f, 2.23)) * scaleMatrix(1.0f);
+	windowframeTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, windowframeMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
 		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
 		windowframeTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f windowpaneTransform;
-	windowpaneTransform = translationMatrix(Eigen::Vector3f(0.0f, 0.0f, 2.23)) * scaleMatrix(1.0f);
+	windowpaneTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, windowpaneMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
 		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
 		windowpaneTransform, worldToClip, lights, width, height);
