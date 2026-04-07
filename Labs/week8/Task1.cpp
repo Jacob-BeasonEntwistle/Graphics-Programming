@@ -17,7 +17,7 @@
 // [DONE] Subtask 1: Implement the Reflect function in Shading.hpp, so you can find the reflected vector.
 // [DONE] Subtask 2: Implement the Phong specular term in Shading.hpp, to find the intensity of specular reflection
 // [DONE] Subtask 3: Work out correct inputs for the phongSpecularTerm function inside drawTriangle, and draw an image!
-// Subtask 4: Try re-rendering your image with different lighting setups, and specular exponents, and see how it changes!
+// [DONE] Subtask 4: Try re-rendering your image with different lighting setups, and specular exponents, and see how it changes!
 
 struct Triangle {
 	std::array<Eigen::Vector3f, 3> screen; // Coordinates of the triangle in screen space.
@@ -124,7 +124,7 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 					// Work out the incoming light dir (from the light into the surface point).
 					Eigen::Vector3f incomingLightDir = light->getDirection(normP);
 					// Work out the view direction (from surface point towards camera). Make sure it's normalized!
-					Eigen::Vector3f viewDir = camWorldPos;
+					Eigen::Vector3f viewDir = (camWorldPos - worldP).normalized();
 					// Find the specular term by calling phongSpecularTerm.
 					float specularTerm = phongSpecularTerm(incomingLightDir, normP, viewDir, specularExponent);
 					// *** END YOUR CODE ***
@@ -269,7 +269,8 @@ int main()
 	// You can modify the lighting setup here....
 	std::vector<std::unique_ptr<Light>> lights;
 	lights.emplace_back(new AmbientLight(Eigen::Vector3f(0.1f, 0.1f, 0.1f)));
-	lights.emplace_back(new DirectionalLight(Eigen::Vector3f(0.4f, 0.4f, 0.4f), Eigen::Vector3f(1.f, -1.f, 0.0f)));
+	lights.emplace_back(new DirectionalLight(Eigen::Vector3f(0.2f, 0.2f, 0.2f), Eigen::Vector3f(1.f, -1.f, 0.0f)));
+	lights.emplace_back(new PointLight(Eigen::Vector3f(20.0f, 20.0f, 20.0f), Eigen::Vector3f(0.0f, 1.0f, 0.8f)));
 
 	Mesh bunnyMesh = loadMeshFile(bunnyFilename);
 	Mesh planeMesh = loadMeshFile(planeFilename);
@@ -285,7 +286,7 @@ int main()
 	Eigen::Matrix4f planeTransform; 
 	planeTransform = translationMatrix(Eigen::Vector3f(0.0f, -1.0f, 3.f)) * scaleMatrix(1.4f);
 	drawMesh(imageBuffer, zBuffer, planeMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f), 
-		Eigen::Vector3f::Ones()*1.0f, 10.f, camWorldPos,
+		Eigen::Vector3f::Ones()*1.0f, 30.f, camWorldPos,
 		planeTransform, worldToClip, lights, width, height);
 
 	// For debug - draw point lights as colored circles so we can see where they are

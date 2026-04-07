@@ -17,6 +17,10 @@ add_executable(rasteriser
     source/Shading.hpp
     source/Triangle.hpp
     source/TriangleRenderer.hpp
+    source/Material.hpp
+    source/Wood.hpp
+    source/Glass.hpp
+    source/Fabric.hpp
 )
 
 target_link_libraries(rasteriser 

@@ -83,15 +83,12 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 				// We only need to do the following if the light isn't an ambient light.
 				if (light->getType() != Light::Type::AMBIENT) {
 
-					// Subtask 3: Work out correct inputs for the phongSpecularTerm function inside drawTriangle, and draw an image!
-					// *** YOUR CODE HERE ***
 					// Work out the incoming light dir (from the light into the surface point).
 					Eigen::Vector3f incomingLightDir = light->getDirection(normP);
 					// Work out the view direction (from surface point towards camera). Make sure it's normalized!
-					Eigen::Vector3f viewDir = camWorldPos;
+					Eigen::Vector3f viewDir = (camWorldPos - worldP).normalized();
 					// Find the specular term by calling phongSpecularTerm.
 					float specularTerm = phongSpecularTerm(incomingLightDir, normP, viewDir, specularExponent);
-					// *** END YOUR CODE ***
 
 					Eigen::Vector3f specularOut = specularColor * specularTerm;
 					specularOut = coeffWiseMultiply(specularOut, lightIntensity);

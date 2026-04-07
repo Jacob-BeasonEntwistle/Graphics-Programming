@@ -71,8 +71,8 @@ int main()
 
 	// --[CREATING THE LIGHTS]--
 	std::vector<std::unique_ptr<Light>> lights;
-	lights.emplace_back(new AmbientLight(Eigen::Vector3f(0.1f, 0.1f, 0.1f)));
-	lights.emplace_back(new DirectionalLight(Eigen::Vector3f(0.4f, 0.4f, 0.4f), Eigen::Vector3f(1.f, -1.f, 0.0f)));
+	lights.emplace_back(new AmbientLight(Eigen::Vector3f(0.2f, 0.2f, 0.2f)));
+	lights.emplace_back(new PointLight(Eigen::Vector3f(10.0f, 10.0f, 10.0f), Eigen::Vector3f(0.0f, 2.5f, 5.0f)));
 
 
 
@@ -92,7 +92,6 @@ int main()
 	// --[POSITIONING THE MESHES]--
 	Eigen::Matrix4f bookshelfTransform;
 	bookshelfTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
-	// .... and change the specular exponent here!
 	drawMesh(imageBuffer, zBuffer, bookshelfMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
 		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
 		bookshelfTransform, worldToClip, lights, width, height);
@@ -138,6 +137,9 @@ int main()
 	drawMesh(imageBuffer, zBuffer, windowpaneMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
 		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
 		windowpaneTransform, worldToClip, lights, width, height);
+
+	// For debug - draw point lights as colored circles so we can see where they are
+	drawPointLights(imageBuffer, width, height, lights);
 
     // Save the image
     int errorCode;
