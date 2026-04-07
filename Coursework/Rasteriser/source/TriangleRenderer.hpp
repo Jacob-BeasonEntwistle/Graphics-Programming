@@ -1,9 +1,12 @@
 #pragma once
+
 #include "Triangle.hpp"
 #include "Shading.hpp"
 #include "Light.hpp"
 #include "Image.hpp"
+#include "Material.hpp"
 
+// Calculates 2D screen bounding box limits for a triangle - optimises rendering performance
 void findScreenBoundingBox(const Triangle& t, int width, int height, int& minX, int& minY, int& maxX, int& maxY)
 {
 	// Find a bounding box around the triangle
@@ -23,8 +26,7 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 	std::vector<float>& zBuffer,
 	const Triangle& t,
 	const std::vector<std::unique_ptr<Light>>& lights,
-	const Eigen::Vector3f& albedo, const Eigen::Vector3f& specularColor,
-	float specularExponent,
+	Material* material,		// Takes Material pointer to allow polymorphic shading - different logic for each material
 	const Eigen::Vector3f& camWorldPos)
 {
 	int minX, minY, maxX, maxY;
@@ -61,6 +63,7 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 
 			Eigen::Vector3f worldP = t.verts[0] * b0 + t.verts[1] * b1 + t.verts[2] * b2;
 
+			// Perform depth testing (Z-buffering) to ensure only the closest triangle is drawn
 			float depth = t.screen[0].z() * b0 + t.screen[1].z() * b1 + t.screen[2].z() * b2;
 			int depthIdx = static_cast<int>(p.x()) + static_cast<int>(p.y()) * width;
 			if (depth > zBuffer[depthIdx]) continue;
@@ -83,33 +86,21 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 				// We only need to do the following if the light isn't an ambient light.
 				if (light->getType() != Light::Type::AMBIENT) {
 
+					Eigen::Vector3f lightPos = light->getLightLocation();
 					// Work out the incoming light dir (from the light into the surface point).
-					Eigen::Vector3f incomingLightDir = light->getDirection(normP);
+					Eigen::Vector3f incomingLightDir = (lightPos - worldP).normalized();
 					// Work out the view direction (from surface point towards camera). Make sure it's normalized!
 					Eigen::Vector3f viewDir = (camWorldPos - worldP).normalized();
-					// Find the specular term by calling phongSpecularTerm.
-					float specularTerm = phongSpecularTerm(incomingLightDir, normP, viewDir, specularExponent);
-
-					Eigen::Vector3f specularOut = specularColor * specularTerm;
-					specularOut = coeffWiseMultiply(specularOut, lightIntensity);
-
-					// Take the dot product of the normal with the light direction.
-					float dotProd = normP.dot(-incomingLightDir);
-
-					// We don't want negative light - if dot product less than 0, set it to 0.
-					dotProd = std::max(dotProd, 0.0f);
-
-					// Multiply the light intensity by the dot product.
-					Eigen::Vector3f diffuseOut = lightIntensity * dotProd;
-					diffuseOut = coeffWiseMultiply(diffuseOut, albedo);
-
-					// Add both diffuse and specular components to the colour.
-					color += specularOut;
-					color += diffuseOut;
+					
+					// Dynamically calculating the light contribution using the materials specific virtual shade function
+					Eigen::Vector3f contribution = material->shade(normP, viewDir, incomingLightDir, lightIntensity);
+					color += contribution;
 				}
+				// If the light is ambient light there is no light direction
 				else {
-					// Light is ambient - just multiply light intensity with albedo.
-					color += coeffWiseMultiply(lightIntensity, albedo);
+					Eigen::Vector3f viewDir = (camWorldPos - worldP).normalized();
+					Eigen::Vector3f contribution = material->shade(normP, viewDir, Eigen::Vector3f::Zero(), lightIntensity);
+					color += contribution;
 				}
 			}
 

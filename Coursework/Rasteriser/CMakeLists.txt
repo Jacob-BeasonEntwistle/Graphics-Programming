@@ -9,6 +9,7 @@ include_directories(../../3rdParty/eigen-3.4.0)
 
 add_executable(rasteriser
     source/rasteriser.cpp
+    source/Camera.hpp
     source/Image.hpp
     source/Light.hpp
     source/LinAlg.hpp
@@ -18,9 +19,6 @@ add_executable(rasteriser
     source/Triangle.hpp
     source/TriangleRenderer.hpp
     source/Material.hpp
-    source/Wood.hpp
-    source/Glass.hpp
-    source/Fabric.hpp
 )
 
 target_link_libraries(rasteriser 

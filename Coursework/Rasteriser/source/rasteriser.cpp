@@ -6,6 +6,7 @@
 
 #include "TriangleRenderer.hpp"
 #include "MeshRenderer.hpp"
+#include "Material.hpp"
 
 Eigen::Matrix4f projectionMatrix(int height, int width, float horzFov = 70.f * M_PI / 180.f, float zFar = 10.f, float zNear = 0.1f)
 {
@@ -18,6 +19,22 @@ Eigen::Matrix4f projectionMatrix(int height, int width, float horzFov = 70.f * M
 		0, 0, 1, 0;
 	return projection;
 }
+
+// --[CREATING MATERIALS]--
+Material* woodMaterial = new Wood(
+	Eigen::Vector3f(0.8f, 0.5f, 0.3f),		// Albedo
+	Eigen::Vector3f(0.2f, 0.2f, 0.2f),		// Specular color
+	50.0f									// Specular exponent
+);
+
+Material* glassMaterial = new Glass(
+	Eigen::Vector3f(0.9f, 0.9f, 1.0f),		// Specular color
+	100.0f									// Specular exponent
+);
+
+Material* fabricMaterial = new Fabric(
+	Eigen::Vector3f(0.6f, 0.1f, 0.1f)		// Albedo
+);
 
 int main()
 {
@@ -72,7 +89,7 @@ int main()
 	// --[CREATING THE LIGHTS]--
 	std::vector<std::unique_ptr<Light>> lights;
 	lights.emplace_back(new AmbientLight(Eigen::Vector3f(0.2f, 0.2f, 0.2f)));
-	lights.emplace_back(new PointLight(Eigen::Vector3f(10.0f, 10.0f, 10.0f), Eigen::Vector3f(0.0f, 2.5f, 5.0f)));
+	lights.emplace_back(new PointLight(Eigen::Vector3f(2.5f, 2.5f, 2.5f), Eigen::Vector3f(0.0f, 2.0f, 5.0f)));
 
 
 
@@ -92,54 +109,52 @@ int main()
 	// --[POSITIONING THE MESHES]--
 	Eigen::Matrix4f bookshelfTransform;
 	bookshelfTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
-	drawMesh(imageBuffer, zBuffer, bookshelfMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
-		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
+	// Plug the earlier created material into the drawMesh(...) function
+	drawMesh(imageBuffer, zBuffer, bookshelfMesh, woodMaterial, camWorldPos,
 		bookshelfTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f coffeetableTransform;
 	coffeetableTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
-	drawMesh(imageBuffer, zBuffer, coffeetableMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
-		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
+	drawMesh(imageBuffer, zBuffer, coffeetableMesh, woodMaterial, camWorldPos,
 		coffeetableTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f shelfTransform;
 	shelfTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
-	drawMesh(imageBuffer, zBuffer, shelfMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
-		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
+	drawMesh(imageBuffer, zBuffer, shelfMesh, woodMaterial, camWorldPos,
 		shelfTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f sofaTransform;
 	sofaTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
-	drawMesh(imageBuffer, zBuffer, sofaMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
-		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
+	drawMesh(imageBuffer, zBuffer, sofaMesh, fabricMaterial, camWorldPos,
 		sofaTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f tvTransform;
 	tvTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
-	drawMesh(imageBuffer, zBuffer, tvMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
-		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
+	drawMesh(imageBuffer, zBuffer, tvMesh, glassMaterial, camWorldPos,
 		tvTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f tvstandTransform;
 	tvstandTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
-	drawMesh(imageBuffer, zBuffer, tvstandMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
-		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
+	drawMesh(imageBuffer, zBuffer, tvstandMesh, woodMaterial, camWorldPos,
 		tvstandTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f windowframeTransform;
 	windowframeTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
-	drawMesh(imageBuffer, zBuffer, windowframeMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
-		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
+	drawMesh(imageBuffer, zBuffer, windowframeMesh, woodMaterial, camWorldPos,
 		windowframeTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f windowpaneTransform;
 	windowpaneTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
-	drawMesh(imageBuffer, zBuffer, windowpaneMesh, Eigen::Vector3f(0.f, 0.5f, 0.8f),
-		Eigen::Vector3f::Ones() * 1.0f, 10.f, camWorldPos,
+	drawMesh(imageBuffer, zBuffer, windowpaneMesh, glassMaterial, camWorldPos,
 		windowpaneTransform, worldToClip, lights, width, height);
 
 	// For debug - draw point lights as colored circles so we can see where they are
 	drawPointLights(imageBuffer, width, height, lights);
+
+	// Delete the created materials to prevent memory leak
+	delete woodMaterial;
+	delete glassMaterial;
+	delete fabricMaterial;
 
     // Save the image
     int errorCode;

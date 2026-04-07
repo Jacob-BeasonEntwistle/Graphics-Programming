@@ -2,12 +2,12 @@
 #include <vector>
 #include "Mesh.hpp"
 #include "Light.hpp"
+#include "Material.hpp"
 
 void drawMesh(std::vector<unsigned char>& image,
 	std::vector<float>& zBuffer,
 	const Mesh& mesh,
-	const Eigen::Vector3f& albedo, const Eigen::Vector3f& specularColor,
-	float specularExponent,
+	Material* material,
 	const Eigen::Vector3f& camWorldPos,
 	const Eigen::Matrix4f& modelToWorld,
 	const Eigen::Matrix4f& worldToClip,
@@ -56,6 +56,6 @@ void drawMesh(std::vector<unsigned char>& image,
 		t.texs[1] = mesh.texs[mesh.tFaces[i][1]];
 		t.texs[2] = mesh.texs[mesh.tFaces[i][2]];
 
-		drawTriangle(image, width, height, zBuffer, t, lights, albedo, specularColor, specularExponent, camWorldPos);
+		drawTriangle(image, width, height, zBuffer, t, lights, material, camWorldPos);
 	}
 }
