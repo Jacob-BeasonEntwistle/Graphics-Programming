@@ -36,6 +36,16 @@ Material* fabricMaterial = new Fabric(
 	Eigen::Vector3f(0.6f, 0.1f, 0.1f)		// Albedo
 );
 
+Material* plasterMaterial = new Plaster(
+	Eigen::Vector3f(0.75f, 0.73f, 0.7f),	// Albedo
+	Eigen::Vector3f(0.3f, 0.3f, 0.3f),		// Specular color
+	20.0f									// Specular exponent
+);
+
+Material* carpetMaterial = new Carpet(
+	Eigen::Vector3f(0.25f, 0.3f, 0.45f)
+);
+
 int main()
 {
 	std::string outputFilename = "output.png";
@@ -75,6 +85,8 @@ int main()
 
 
 	// --[SETTING THE FILENAMES OF EACH OBJECT]--
+	std::string roomFilename = "../../../models/Room.obj";
+	std::string floorFilename = "../../../models/Floor.obj";
 	std::string bookshelfFilename = "../../../models/Bookshelf.obj";
 	std::string coffeetableFilename = "../../../models/Coffee_table.obj";
 	std::string shelfFilename = "../../../models/Shelf.obj";
@@ -94,6 +106,8 @@ int main()
 
 
 	// --[LOADING THE MESHES]--
+	Mesh roomMesh = loadMeshFile(roomFilename);
+	Mesh floorMesh = loadMeshFile(floorFilename);
 	Mesh bookshelfMesh = loadMeshFile(bookshelfFilename);
 	Mesh coffeetableMesh = loadMeshFile(coffeetableFilename);
 	Mesh shelfMesh = loadMeshFile(shelfFilename);
@@ -107,6 +121,16 @@ int main()
 	Eigen::Vector3f sceneOrigin(0.0f, -1.0f, 5.0f);
 
 	// --[POSITIONING THE MESHES]--
+	Eigen::Matrix4f roomTransform;
+	roomTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
+	drawMesh(imageBuffer, zBuffer, roomMesh, plasterMaterial, camWorldPos,
+		roomTransform, worldToClip, lights, width, height);
+
+	Eigen::Matrix4f floorTransform;
+	floorTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
+	drawMesh(imageBuffer, zBuffer, floorMesh, carpetMaterial, camWorldPos,
+		floorTransform, worldToClip, lights, width, height);
+
 	Eigen::Matrix4f bookshelfTransform;
 	bookshelfTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	// Plug the earlier created material into the drawMesh(...) function
@@ -155,6 +179,8 @@ int main()
 	delete woodMaterial;
 	delete glassMaterial;
 	delete fabricMaterial;
+	delete plasterMaterial;
+	delete carpetMaterial;
 
     // Save the image
     int errorCode;

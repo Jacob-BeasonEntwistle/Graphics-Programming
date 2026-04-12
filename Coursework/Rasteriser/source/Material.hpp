@@ -122,3 +122,73 @@ public:
 		return coeffWiseMultiply<Eigen::Vector3f>(albedo, lightIntensity) * NdotL;
 	}
 };
+
+class Plaster : public Material {
+private:
+	Eigen::Vector3f albedo;
+	Eigen::Vector3f specularColor;
+	float specularExponent;
+
+public:
+	Plaster(const Eigen::Vector3f& a, const Eigen::Vector3f& sC, float sE)
+		: albedo(a), specularColor(sC), specularExponent(sE) {}
+
+	Eigen::Vector3f shade(
+		const Eigen::Vector3f normal,
+		const Eigen::Vector3f viewDir,
+		const Eigen::Vector3f lightDir,
+		const Eigen::Vector3f lightIntensity
+	) const override {	// Overrides the shade function of the base class
+		// Vectors must be normalised to avoid lighting distortion
+		Eigen::Vector3f n = normal.normalized();
+
+		// Checks if the light direction has zero length (for ambient light) and returns an unlit state
+		if (lightDir.norm() <= 0.0f) {
+			return coeffWiseMultiply<Eigen::Vector3f>(albedo, lightIntensity);
+		}
+
+		Eigen::Vector3f l = lightDir.normalized();
+		Eigen::Vector3f v = viewDir.normalized();
+
+		// Lambertian diffuse term
+		// std::max(0.0f, ...) prevents negative light values - setting the minimum value to 0.0f
+		float NdotL = std::max(0.0f, n.dot(l));
+		Eigen::Vector3f diffuse = coeffWiseMultiply<Eigen::Vector3f>(albedo, lightIntensity) * NdotL;
+
+		// Specular term
+		float spec = blinnPhongSpecularTerm(l, n, v, specularExponent);
+		Eigen::Vector3f specular = coeffWiseMultiply<Eigen::Vector3f>(specularColor, lightIntensity) * spec;
+
+		return diffuse + specular;
+	}
+};
+
+class Carpet : public Material {
+private:
+	// Carpet material is matte/diffuse so it only requires base colour, no shininess (specular)
+	Eigen::Vector3f albedo;
+
+public:
+	Carpet(const Eigen::Vector3f& a) : albedo(a) {}
+
+	Eigen::Vector3f shade(
+		const Eigen::Vector3f normal,
+		const Eigen::Vector3f viewDir,
+		const Eigen::Vector3f lightDir,
+		const Eigen::Vector3f lightIntensity
+	) const override {
+		// Normalise vectors
+		Eigen::Vector3f n = normal.normalized();
+
+		// Ambient fallback
+		if (lightDir.norm() <= 0.0f) {
+			return coeffWiseMultiply<Eigen::Vector3f>(albedo, lightIntensity);
+		}
+
+		Eigen::Vector3f l = lightDir.normalized();
+
+		// Prevent negative light
+		float NdotL = std::max(0.0f, n.dot(l));
+		return coeffWiseMultiply<Eigen::Vector3f>(albedo, lightIntensity) * NdotL;
+	}
+};
