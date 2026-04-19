@@ -86,9 +86,13 @@ int main(int argc, char* argv[]) {
 
 	// Here's how to add the mesh without using the BVH.
 	// Try comparing performance to the BVH version above.
-	//Model spotModel("../models/spot.obj");
-	//scene.renderables.push_back(std::make_shared<Mesh>(&spotShader, &spotModel));
-	//scene.renderables.back()->modelToWorld(rotateY(M_PI / 4.0f));
+	
+	// [With BVN: 97.305 seconds]
+	// [Without BVH: ~1700 seconds]
+
+	/*Model spotModel("../models/spot.obj");
+	scene.renderables.push_back(std::make_shared<Mesh>(&spotShader, &spotModel));
+	scene.renderables.back()->modelToWorld(rotateY(M_PI / 4.0f));*/
 
 	// *** Add lights to scene ***
 	Eigen::Vector3f ambientLight(.1f, .1f, .1f);
@@ -156,7 +160,7 @@ int main(int argc, char* argv[]) {
 
 	auto renderTime = std::chrono::steady_clock::now() - startTime;
 
-	std::cout << "Render duration " << std::chrono::duration_cast<std::chrono::milliseconds>(renderTime).count() * 1e-3f << " seconds." << std::endl;
+	std::cout << "\nRender duration " << std::chrono::duration_cast<std::chrono::milliseconds>(renderTime).count() * 1e-3f << " seconds." << std::endl;
 
 	// *** Save the output image ***
 	int errorCode;

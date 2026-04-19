@@ -153,10 +153,37 @@ Eigen::Vector3f coefftWiseMul(const Eigen::Vector3f& left, const Eigen::Vector3f
 /// </summary>
 AABB getRenderablesAABB(const std::vector<std::shared_ptr<Renderable>>& renderables)
 {
-	AABB aabb;
-	// **** YOUR CODE HERE ****
+	// *** YOUR CODE HERE ***
+
 	// Iterate through the list of renderables, and find an AABB that surrounds all of them.
 	// Make use of the getAABB() method that all Renderable instances have.
+	AABB aabb;
+	AABB current;
+
+	// Initialise the minimum and maximum xyz values of the aabb
+	for (int i = 0; i < 3; i++) {
+		aabb.min[i] = std::numeric_limits<float>::max();
+		aabb.max[i] = std::numeric_limits<float>::lowest();
+	}
+
+	// For each renderable...
+	for (int i = 0; i < renderables.size(); i++) {
+		// get the bounding box of the currently selected renderable
+		current = renderables[i]->getAABB();
+
+		// For each axis (x, y, z)...
+		for (int j = 0; j < 3; j++) {
+			// if the current minimum is less than the total aabb, expand the bounding box
+			if (current.min[j] < aabb.min[j]) {
+				aabb.min[j] = current.min[j];
+			}
+
+			// if the current maximum is more than the total aabb, expand the bounding box
+			if (current.max[j] > aabb.max[j]) {
+				aabb.max[j] = current.max[j];
+			}
+		}
+	}
+
 	return aabb;
 }
-

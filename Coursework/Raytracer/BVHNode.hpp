@@ -33,15 +33,50 @@ public:
 
 		// 1. Find an AABB surrounding all the renderables, and update the aabb_ member.
 		//    Implement this in the getRenderablesAABB() function, at the end of GeomUtil.hpp.
+		aabb_ = getRenderablesAABB(renderables);
+		
 		// 2. Choose an axis to split your AABB along (x, y or z).
+		int chosenAxis = findBestSplittingAxis();
+		
+		float splitPos = aabb_.centre()[chosenAxis];
+		
 		// 3. Make lists of the renderables that fall on either side of the split.
+		std::vector<std::shared_ptr<Renderable>> left;
+		std::vector<std::shared_ptr<Renderable>> right;
+
+		for (int i = 0; i < renderables.size(); i++) {
+			AABB currentAABB = renderables[i]->getAABB();
+
+			Eigen::Vector3f centre = currentAABB.centre();
+
+			if (centre[chosenAxis] < splitPos) {
+				left.push_back(renderables[i]);
+			}
+			else {
+				right.push_back(renderables[i]);
+			}
+		}
+
 		// 4. For child0_ and child1_, check if we should terminate:
 		//     a. If we reach the max depth (i.e. maxDepth == 0)
 		//     b. If there are two or fewer Renderables left in the list for this child.
-		// 5. If we should terminate, make a new BVHLeafNode and supply the renderables
-		//    in this list.
-		// 6. If we should not terminate, make a new BVHNode and call this constructor again
-		//    recursively. Don't forget to subtract one from maxDepth!
+		if (maxDepth == 0 || left.size() <= 2) {
+			// 5. If we should terminate, make a new BVHLeafNode and supply the renderables
+			//    in this list.
+			child0_ = std::make_shared<BVHLeafNode>(left);
+		}
+		else {
+			// 6. If we should not terminate, make a new BVHNode and call this constructor again
+			//    recursively. Don't forget to subtract one from maxDepth!
+			child0_ = std::make_shared<BVHNode>(left, maxDepth - 1);
+		}
+
+		if (maxDepth == 0 || right.size() <= 2) {
+			child1_ = std::make_shared<BVHLeafNode>(right);
+		}
+		else {
+			child1_ = std::make_shared<BVHNode>(right, maxDepth - 1);
+		}
 	}
 
 	/// <summary>

@@ -112,6 +112,6 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 
 			c.a = 255;
 
-			setPixel(image, x, y, width, height, c);
+			setPixel(image, width - x - 1, y, width, height, c);
 		}
 }
