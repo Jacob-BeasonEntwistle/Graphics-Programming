@@ -112,6 +112,7 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 
 			c.a = 255;
 
+			// Flip the x value of the pixel being drawn to draw the scene flipped horizontally
 			setPixel(image, width - x - 1, y, width, height, c);
 		}
 }

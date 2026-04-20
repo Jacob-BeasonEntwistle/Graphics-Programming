@@ -21,29 +21,54 @@ Eigen::Matrix4f projectionMatrix(int height, int width, float horzFov = 70.f * M
 }
 
 // --[CREATING MATERIALS]--
-Material* woodMaterial = new Wood(
-	Eigen::Vector3f(0.8f, 0.5f, 0.3f),		// Albedo
-	Eigen::Vector3f(0.2f, 0.2f, 0.2f),		// Specular color
-	50.0f									// Specular exponent
+// --Wood--
+Material* bookshelfMaterial = new Wood(
+	Eigen::Vector3f(0.160f, 0.118f, 0.084f),	// Albedo
+	Eigen::Vector3f(0.08f, 0.08f, 0.08f),		// Specular color
+	80.0f										// Specular exponent
+);
+Material* tvStandMaterial = new Wood(
+	Eigen::Vector3f(1.0f, 0.903f, 0.734f),		// Albedo
+	Eigen::Vector3f(0.08f, 0.08f, 0.08f),		// Specular color
+	80.0f										// Specular exponent
+);
+Material* coffeeTableMaterial = new Wood(
+	Eigen::Vector3f(0.098f, 0.054f, 0.022f),	// Albedo
+	Eigen::Vector3f(0.08f, 0.08f, 0.08f),		// Specular color
+	80.0f										// Specular exponent
+);
+Material* windowFrameMaterial = new Wood(
+	Eigen::Vector3f(0.410f, 0.391f, 0.339f),	// Albedo
+	Eigen::Vector3f(0.08f, 0.08f, 0.08f),		// Specular color
+	80.0f										// Specular exponent
+);
+Material* shelfMaterial = new Wood(
+	Eigen::Vector3f(0.325f, 0.378f, 0.311f),	// Albedo
+	Eigen::Vector3f(0.08f, 0.08f, 0.08f),		// Specular color
+	80.0f										// Specular exponent
 );
 
-Material* glassMaterial = new Glass(
-	Eigen::Vector3f(0.9f, 0.9f, 1.0f),		// Specular color
-	100.0f									// Specular exponent
+// --Glass--
+Material* windowPaneMaterial = new Glass(
+	Eigen::Vector3f(1.0f, 1.0f, 1.0f),			// Specular color
+	300.0f										// Specular exponent
+);
+Material* tvMaterial = new Glass(
+	Eigen::Vector3f(0.009f, 0.007f, 0.005f),	// Specular color
+	200.0f										// Specular exponent
 );
 
-Material* fabricMaterial = new Fabric(
-	Eigen::Vector3f(0.6f, 0.1f, 0.1f)		// Albedo
+// --Other--
+Material* roomMaterial = new Plaster(
+	Eigen::Vector3f(0.461f, 0.441f, 0.375f),	// Albedo
+	Eigen::Vector3f(1.0f, 1.0f, 1.0f),			// Specular color
+	20.0f										// Specular exponent
 );
-
-Material* plasterMaterial = new Plaster(
-	Eigen::Vector3f(0.75f, 0.73f, 0.7f),	// Albedo
-	Eigen::Vector3f(0.3f, 0.3f, 0.3f),		// Specular color
-	20.0f									// Specular exponent
+Material* sofaMaterial = new Fabric(
+	Eigen::Vector3f(0.170f, 0.146f, 0.115f)		// Albedo
 );
-
-Material* carpetMaterial = new Carpet(
-	Eigen::Vector3f(0.25f, 0.3f, 0.45f)
+Material* floorMaterial = new Carpet(
+	Eigen::Vector3f(0.833f, 0.791f, 0.647f)		// Albedo
 );
 
 int main()
@@ -72,7 +97,7 @@ int main()
 	Eigen::Matrix4f projection = projectionMatrix(height, width);
 
 	// This matrix rotates the camera, tilting it down, then translates it up to make it look down on the scene.
-	Eigen::Matrix4f cameraToWorld = translationMatrix(Eigen::Vector3f(0.f, 0.8f, 0.0f)) * rotateXMatrix(0.26f);
+	Eigen::Matrix4f cameraToWorld = translationMatrix(Eigen::Vector3f(0.0f, 0.8f, 0.0f)) * rotateXMatrix(0.26f);
 
 	Eigen::Vector3f camWorldPos = (cameraToWorld * Eigen::Vector4f(0, 0, 0, 1)).block<3, 1>(0, 0);
 
@@ -88,20 +113,20 @@ int main()
 	std::string roomFilename = "../../../models/Room.obj";
 	std::string floorFilename = "../../../models/Floor.obj";
 	std::string bookshelfFilename = "../../../models/Bookshelf.obj";
-	std::string coffeetableFilename = "../../../models/Coffee_table.obj";
+	std::string coffeetableFilename = "../../../models/CoffeeTable.obj";
 	std::string shelfFilename = "../../../models/Shelf.obj";
 	std::string sofaFilename = "../../../models/Sofa.obj";
 	std::string tvFilename = "../../../models/TV.obj";
-	std::string tvstandFilename = "../../../models/TV_stand.obj";
-	std::string windowframeFilename = "../../../models/Window_frame.obj";
-	std::string windowpaneFilename = "../../../models/Window_pane.obj";
+	std::string tvstandFilename = "../../../models/TVStand.obj";
+	std::string windowframeFilename = "../../../models/WindowFrame.obj";
+	std::string windowpaneFilename = "../../../models/WindowPane.obj";
 
 
 
 	// --[CREATING THE LIGHTS]--
 	std::vector<std::unique_ptr<Light>> lights;
-	lights.emplace_back(new AmbientLight(Eigen::Vector3f(0.2f, 0.2f, 0.2f)));
-	lights.emplace_back(new PointLight(Eigen::Vector3f(2.5f, 2.5f, 2.5f), Eigen::Vector3f(0.0f, 2.0f, 5.0f)));
+	lights.emplace_back(new AmbientLight(Eigen::Vector3f(0.02f, 0.02f, 0.02f)));
+	lights.emplace_back(new PointLight(Eigen::Vector3f(1.6f, 1.6f, 1.6f), Eigen::Vector3f(0.0f, 2.0f, 5.0f)));
 
 
 
@@ -123,64 +148,74 @@ int main()
 	// --[POSITIONING THE MESHES]--
 	Eigen::Matrix4f roomTransform;
 	roomTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
-	drawMesh(imageBuffer, zBuffer, roomMesh, plasterMaterial, camWorldPos,
+	// Plug the earlier created material into the drawMesh(...) function
+	drawMesh(imageBuffer, zBuffer, roomMesh, roomMaterial, camWorldPos,
 		roomTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f floorTransform;
 	floorTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
-	drawMesh(imageBuffer, zBuffer, floorMesh, carpetMaterial, camWorldPos,
+	drawMesh(imageBuffer, zBuffer, floorMesh, floorMaterial, camWorldPos,
 		floorTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f bookshelfTransform;
 	bookshelfTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
-	// Plug the earlier created material into the drawMesh(...) function
-	drawMesh(imageBuffer, zBuffer, bookshelfMesh, woodMaterial, camWorldPos,
+	drawMesh(imageBuffer, zBuffer, bookshelfMesh, bookshelfMaterial, camWorldPos,
 		bookshelfTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f coffeetableTransform;
 	coffeetableTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
-	drawMesh(imageBuffer, zBuffer, coffeetableMesh, woodMaterial, camWorldPos,
+	drawMesh(imageBuffer, zBuffer, coffeetableMesh, coffeeTableMaterial, camWorldPos,
 		coffeetableTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f shelfTransform;
 	shelfTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
-	drawMesh(imageBuffer, zBuffer, shelfMesh, woodMaterial, camWorldPos,
+	drawMesh(imageBuffer, zBuffer, shelfMesh, shelfMaterial, camWorldPos,
 		shelfTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f sofaTransform;
 	sofaTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
-	drawMesh(imageBuffer, zBuffer, sofaMesh, fabricMaterial, camWorldPos,
+	drawMesh(imageBuffer, zBuffer, sofaMesh, sofaMaterial, camWorldPos,
 		sofaTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f tvTransform;
 	tvTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
-	drawMesh(imageBuffer, zBuffer, tvMesh, glassMaterial, camWorldPos,
+	drawMesh(imageBuffer, zBuffer, tvMesh, tvMaterial, camWorldPos,
 		tvTransform, worldToClip, lights, width, height);
 
-	Eigen::Matrix4f tvstandTransform;
-	tvstandTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
-	drawMesh(imageBuffer, zBuffer, tvstandMesh, woodMaterial, camWorldPos,
-		tvstandTransform, worldToClip, lights, width, height);
+	Eigen::Matrix4f tvStandTransform;
+	tvStandTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
+	drawMesh(imageBuffer, zBuffer, tvstandMesh, tvStandMaterial, camWorldPos,
+		tvStandTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f windowframeTransform;
 	windowframeTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
-	drawMesh(imageBuffer, zBuffer, windowframeMesh, woodMaterial, camWorldPos,
+	drawMesh(imageBuffer, zBuffer, windowframeMesh, windowFrameMaterial, camWorldPos,
 		windowframeTransform, worldToClip, lights, width, height);
 
 	Eigen::Matrix4f windowpaneTransform;
 	windowpaneTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
-	drawMesh(imageBuffer, zBuffer, windowpaneMesh, glassMaterial, camWorldPos,
+	drawMesh(imageBuffer, zBuffer, windowpaneMesh, windowPaneMaterial, camWorldPos,
 		windowpaneTransform, worldToClip, lights, width, height);
 
 	// For debug - draw point lights as colored circles so we can see where they are
 	drawPointLights(imageBuffer, width, height, lights);
 
 	// Delete the created materials to prevent memory leak
-	delete woodMaterial;
-	delete glassMaterial;
-	delete fabricMaterial;
-	delete plasterMaterial;
-	delete carpetMaterial;
+	// --Wood--
+	delete bookshelfMaterial;
+	delete tvStandMaterial;
+	delete coffeeTableMaterial;
+	delete windowFrameMaterial;
+	delete shelfMaterial;
+
+	// --Glass--
+	delete windowPaneMaterial;
+	delete tvMaterial;
+
+	// --Other--
+	delete roomMaterial;
+	delete sofaMaterial;
+	delete floorMaterial;
 
     // Save the image
     int errorCode;

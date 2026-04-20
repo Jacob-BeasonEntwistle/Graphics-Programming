@@ -63,6 +63,17 @@ int main(int argc, char* argv[]) {
 		aqua(0.f, .8f, .8f),
 		lavender(178.f / 255.f, 164.f / 255.f, 212.f / 255.f);
 
+	Eigen::Vector3f
+		room(0.461f, 0.441f, 0.375f),
+		floor(0.833f, 0.791f, 0.647f),
+		sofa(0.170f, 0.146f, 0.115f),
+		bookshelf(0.160f, 0.118f, 0.084f),
+		tvStand(1.0f, 0.903f, 0.734f),
+		coffeeTable(0.098f, 0.054f, 0.022f),
+		windowFrame(0.410f, 0.391f, 0.339f),
+		shelf(0.325f, 0.378f, 0.311f),
+		tv(0.009f, 0.007f, 0.005f);
+
 	// *** Load shaders and textures ***
 	std::vector<uint8_t> spotTexture;
 	unsigned int width, height;
@@ -76,13 +87,54 @@ int main(int argc, char* argv[]) {
 	MirrorShader mirrorShader;
 	TexCoordTestShader texCoordTestShader;
 
+	LambertianShader
+		roomLambertianShader(room),
+		floorLambertianShader(floor),
+		sofaLambertianShader(sofa),
+		bookshelfLambertianShader(bookshelf),
+		tvStandLambertianShader(tvStand),
+		coffeeTableLambertianShader(coffeeTable),
+		windowFrameLambertianShader(windowFrame),
+		shelfLambertianShader(shelf);
+	PhongShader tvPhongShader(tv, tv, 10.0f, false);
+
 	// *** Set up scene ***
 	Scene scene;
 
 	// Optional code: here's how to add the spot mesh to the scene, using a BVH
 	// Try enabling this and comparing it to the non-BVH version below!
-	Model spotModel("../models/spot.obj");
-	scene.renderables.push_back(std::make_shared<BVHNode>(spotModel, &spotShader, 4, rotateY(M_PI / 4.0f)));
+	/*Model spotModel("../models/spot.obj");
+	scene.renderables.push_back(std::make_shared<BVHNode>(spotModel, &spotShader, 4, rotateY(M_PI / 4.0f)));*/
+
+	Model roomModel("../../../models/Room.obj");
+	scene.renderables.push_back(std::make_shared<BVHNode>(roomModel, &roomLambertianShader, 4, rotateY(M_PI)));
+
+	Model floorModel("../../../models/Floor.obj");
+	scene.renderables.push_back(std::make_shared<BVHNode>(roomModel, &floorLambertianShader, 4, rotateY(M_PI)));
+
+	Model bookshelfModel("../../../models/Bookshelf.obj");
+	scene.renderables.push_back(std::make_shared<BVHNode>(bookshelfModel, &bookshelfLambertianShader, 4, rotateY(M_PI)));
+
+	Model coffeeTableModel("../../../models/CoffeeTable.obj");
+	scene.renderables.push_back(std::make_shared<BVHNode>(coffeeTableModel, &coffeeTableLambertianShader, 4, rotateY(M_PI)));
+
+	Model shelfModel("../../../models/Shelf.obj");
+	scene.renderables.push_back(std::make_shared<BVHNode>(shelfModel, &shelfLambertianShader, 4, rotateY(M_PI)));
+
+	Model sofaModel("../../../models/Sofa.obj");
+	scene.renderables.push_back(std::make_shared<BVHNode>(sofaModel, &sofaLambertianShader, 4, rotateY(M_PI)));
+
+	Model tvModel("../../../models/TV.obj");
+	scene.renderables.push_back(std::make_shared<BVHNode>(tvModel, &tvPhongShader, 4, rotateY(M_PI)));
+
+	Model tvStandModel("../../../models/TVStand.obj");
+	scene.renderables.push_back(std::make_shared<BVHNode>(tvStandModel, &tvStandLambertianShader, 4, rotateY(M_PI)));
+
+	Model windowFrameModel("../../../models/WindowFrame.obj");
+	scene.renderables.push_back(std::make_shared<BVHNode>(windowFrameModel, &windowFrameLambertianShader, 4, rotateY(M_PI)));
+
+	Model windowPaneModel("../../../models/WindowPane.obj");
+	scene.renderables.push_back(std::make_shared<BVHNode>(windowPaneModel, &mirrorShader, 4, rotateY(M_PI)));
 
 	// Here's how to add the mesh without using the BVH.
 	// Try comparing performance to the BVH version above.
@@ -98,8 +150,8 @@ int main(int argc, char* argv[]) {
 	Eigen::Vector3f ambientLight(.1f, .1f, .1f);
 
 	std::vector<std::unique_ptr<Light>> lightSources;
-	lightSources.push_back(std::make_unique<PointLight>(Eigen::Vector3f(-1.f, 3.f, -1.f), 3.f * Eigen::Vector3f(1.f, 1.f, 1.f)));
-	lightSources.push_back(std::make_unique<DirectionalLight>(Eigen::Vector3f(0.f, -1.f, 1.f), .5f * Eigen::Vector3f(1.f, 1.f, 1.f)));
+	lightSources.push_back(std::make_unique<PointLight>(Eigen::Vector3f(0.0f, 2.0f, 0.0f), 3.f * Eigen::Vector3f(1.f, 1.f, 1.f)));
+	/*lightSources.push_back(std::make_unique<DirectionalLight>(Eigen::Vector3f(0.f, -1.f, 1.f), .5f * Eigen::Vector3f(1.f, 1.f, 1.f)));*/
 
 	// *** Render the scene ***
 
