@@ -27,7 +27,8 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 	const Triangle& t,
 	const std::vector<std::unique_ptr<Light>>& lights,
 	Material* material,		// Takes Material pointer to allow polymorphic shading - different logic for each material
-	const Eigen::Vector3f& camWorldPos)
+	const Eigen::Vector3f& camWorldPos,
+	const std::vector<uint8_t>& albedoTexture, int texWidth, int texHeight)
 {
 	int minX, minY, maxX, maxY;
 	findScreenBoundingBox(t, width, height, minX, minY, maxX, maxY);
@@ -72,6 +73,35 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 			Eigen::Vector3f normP = t.norms[0] * b0 + t.norms[1] * b1 + t.norms[2] * b2;
 			normP.normalize();
 
+			// Calculate the texture coordinates corresponding to P, texP using barycentric interpolation
+			Eigen::Vector2f texP = t.texs[0] * b0 + t.texs[1] * b1 + t.texs[2] * b2;
+
+			// Convert the coordinate to a point in texture space
+			int texR = (1.0f - texP.y()) * (texHeight - 1);		// Row index
+			int texC = texP.x() * (texWidth - 1);				// Column index
+
+			// Clamp texR and texC to the image bounds
+			if (texR >= texHeight) texR = texHeight - 1;
+			if (texR < 0) texR = 0;
+			if (texC >= texWidth) texC = texWidth - 1;
+			if (texC < 0) texC = 0;
+
+			// Get the value from the texture using the getPixel function on the albedoTexture
+			Color texColor{ getPixel(albedoTexture, texC, texR, texWidth, texHeight) };
+
+			// Normalise the values
+			float linR = texColor.r / 255.0f;
+			float linG = texColor.g / 255.0f;
+			float linB = texColor.b / 255.0f;
+
+			// Use 2.2 to convert from the display space (gamma-encoded) into linear space (correct light physics)
+			float r = pow(linR, 2.2);
+			float g = pow(linG, 2.2);
+			float b = pow(linB, 2.2);
+
+			// Convert it into an Eigen::Vector3f as an albedo
+			Eigen::Vector3f albedo = Eigen::Vector3f(r, g, b);
+
 			// Work out colour at this position.
 			Eigen::Vector3f color = Eigen::Vector3f::Zero();
 
@@ -94,13 +124,14 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 					
 					// Dynamically calculating the light contribution using the materials specific virtual shade function
 					Eigen::Vector3f contribution = material->shade(normP, viewDir, incomingLightDir, lightIntensity);
-					color += contribution;
+					// Apply the texture (albedo) to the light contribution
+					color += contribution.cwiseProduct(albedo);
 				}
 				// If the light is ambient light there is no light direction
 				else {
 					Eigen::Vector3f viewDir = (camWorldPos - worldP).normalized();
 					Eigen::Vector3f contribution = material->shade(normP, viewDir, Eigen::Vector3f::Zero(), lightIntensity);
-					color += contribution;
+					color += contribution.cwiseProduct(albedo);
 				}
 			}
 
@@ -112,7 +143,10 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 
 			c.a = 255;
 
+			int flippedX = width - x - 1;
+			if (flippedX < 0 || flippedX >= width) return;
+
 			// Flip the x value of the pixel being drawn to draw the scene flipped horizontally
-			setPixel(image, width - x - 1, y, width, height, c);
+			setPixel(image, flippedX, y, width, height, c);
 		}
 }

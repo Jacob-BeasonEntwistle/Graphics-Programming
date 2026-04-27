@@ -162,7 +162,9 @@ AABB getRenderablesAABB(const std::vector<std::shared_ptr<Renderable>>& renderab
 
 	// Initialise the minimum and maximum xyz values of the aabb
 	for (int i = 0; i < 3; i++) {
+		// .min is set to max() so that the new point always becomes the new minimum
 		aabb.min[i] = std::numeric_limits<float>::max();
+		// .max is set to lowest() so that the new point always becomes the new maximum
 		aabb.max[i] = std::numeric_limits<float>::lowest();
 	}
 

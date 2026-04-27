@@ -22,14 +22,13 @@ public:
 // Using inheritance to inherit from base Material class
 class Wood : public Material {
 private:
-	Eigen::Vector3f albedo;				// Colour of the material
 	Eigen::Vector3f specularColor;		// The colour of the glossy reflection/highlight
 	float specularExponent;				// Controls the "shininess" of the highlight
 
 public:
 	// Constructor using an initializer list to assign passed arguments to private class variables
-	Wood(const Eigen::Vector3f& a, const Eigen::Vector3f& sC, float sE) 
-		: albedo(a), specularColor(sC), specularExponent(sE) {}
+	Wood(const Eigen::Vector3f& sC, float sE) 
+		: specularColor(sC), specularExponent(sE) {}
 
 	Eigen::Vector3f shade(
 		const Eigen::Vector3f normal,
@@ -42,7 +41,7 @@ public:
 
 		// Checks if the light direction has zero length (for ambient light) and returns an unlit state
 		if (lightDir.norm() <= 0.0f) {
-			return coeffWiseMultiply<Eigen::Vector3f>(albedo, lightIntensity);
+			return lightIntensity;
 		}
 
 		Eigen::Vector3f l = lightDir.normalized();
@@ -51,7 +50,7 @@ public:
 		// Lambertian diffuse term
 		// std::max(0.0f, ...) prevents negative light values - setting the minimum value to 0.0f
 		float NdotL = std::max(0.0f, n.dot(l));
-		Eigen::Vector3f diffuse = coeffWiseMultiply<Eigen::Vector3f>(albedo, lightIntensity) * NdotL;
+		Eigen::Vector3f diffuse = lightIntensity * NdotL;
 
 		// Specular term
 		float spec = blinnPhongSpecularTerm(l, n, v, specularExponent);
@@ -96,10 +95,9 @@ public:
 class Fabric : public Material {
 private:
 	// Fabric material is matte/diffuse so it only requires base colour, no shininess (specular)
-	Eigen::Vector3f albedo;
 
 public:
-	Fabric(const Eigen::Vector3f& a) : albedo(a) {}
+	Fabric() {}
 
 	Eigen::Vector3f shade(
 		const Eigen::Vector3f normal,
@@ -112,26 +110,25 @@ public:
 
 		// Ambient fallback
 		if (lightDir.norm() <= 0.0f) {
-			return coeffWiseMultiply<Eigen::Vector3f>(albedo, lightIntensity);
+			return lightIntensity;
 		}
 
 		Eigen::Vector3f l = lightDir.normalized();
 
 		// Prevent negative light
 		float NdotL = std::max(0.0f, n.dot(l));
-		return coeffWiseMultiply<Eigen::Vector3f>(albedo, lightIntensity) * NdotL;
+		return lightIntensity * NdotL;
 	}
 };
 
 class Plaster : public Material {
 private:
-	Eigen::Vector3f albedo;
 	Eigen::Vector3f specularColor;
 	float specularExponent;
 
 public:
-	Plaster(const Eigen::Vector3f& a, const Eigen::Vector3f& sC, float sE)
-		: albedo(a), specularColor(sC), specularExponent(sE) {}
+	Plaster(const Eigen::Vector3f& sC, float sE)
+		: specularColor(sC), specularExponent(sE) {}
 
 	Eigen::Vector3f shade(
 		const Eigen::Vector3f normal,
@@ -144,7 +141,7 @@ public:
 
 		// Checks if the light direction has zero length (for ambient light) and returns an unlit state
 		if (lightDir.norm() <= 0.0f) {
-			return coeffWiseMultiply<Eigen::Vector3f>(albedo, lightIntensity);
+			return lightIntensity;
 		}
 
 		Eigen::Vector3f l = lightDir.normalized();
@@ -153,7 +150,7 @@ public:
 		// Lambertian diffuse term
 		// std::max(0.0f, ...) prevents negative light values - setting the minimum value to 0.0f
 		float NdotL = std::max(0.0f, n.dot(l));
-		Eigen::Vector3f diffuse = coeffWiseMultiply<Eigen::Vector3f>(albedo, lightIntensity) * NdotL;
+		Eigen::Vector3f diffuse = lightIntensity * NdotL;
 
 		// Specular term
 		float spec = blinnPhongSpecularTerm(l, n, v, specularExponent);
@@ -166,10 +163,9 @@ public:
 class Carpet : public Material {
 private:
 	// Carpet material is matte/diffuse so it only requires base colour, no shininess (specular)
-	Eigen::Vector3f albedo;
 
 public:
-	Carpet(const Eigen::Vector3f& a) : albedo(a) {}
+	Carpet() {}
 
 	Eigen::Vector3f shade(
 		const Eigen::Vector3f normal,
@@ -182,13 +178,13 @@ public:
 
 		// Ambient fallback
 		if (lightDir.norm() <= 0.0f) {
-			return coeffWiseMultiply<Eigen::Vector3f>(albedo, lightIntensity);
+			return lightIntensity;
 		}
 
 		Eigen::Vector3f l = lightDir.normalized();
 
 		// Prevent negative light
 		float NdotL = std::max(0.0f, n.dot(l));
-		return coeffWiseMultiply<Eigen::Vector3f>(albedo, lightIntensity) * NdotL;
+		return lightIntensity * NdotL;
 	}
 };

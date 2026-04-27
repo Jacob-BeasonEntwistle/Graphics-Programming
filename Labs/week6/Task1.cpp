@@ -12,8 +12,8 @@
 // ***** WEEK 6 LAB *****
 // [DONE] Subtask 1: Implement the projectionMatrix function, to make a projection matrix to view your scene!
 // [DONE] Subtask 2: Complete the transformation chain, moving vertices from model space all the way to screen space.
-// Subtask 3: Set up the camera and projection matrices for the transformation chain
-// Subtask 4: Implement Z buffering.
+// [DONE] Subtask 3: Set up the camera and projection matrices for the transformation chain
+// [DONE] Subtask 4: Implement Z buffering.
 // Subtask 5: Implement texture mapping.
 // If you finish early - note that we now have all the tools to properly set up your own scene!
 // This is a great time to start on your own code in the coursework/rasteriser folder, using this as a base if
@@ -35,16 +35,15 @@ Eigen::Matrix4f projectionMatrix(int height, int width, float horzFov = 70.f*M_P
 
 	// Make a projection matrix following the formulation in the lecture slides, and using the provided parameters.
 	// First, work out vertical FoV based on the horizontal FoV:
-	float vertFov = 0.f;
-	vertFov = (horzFov * height) / width;
+	float vertFov = horzFov * float(height) / width;
 
 	// Now construct the matrix.
 	Eigen::Matrix4f projection;
 
 	projection << 
-		(1 / tan(0.5f * horzFov)), 0, 0, 0,
-		0, (1 / tan(0.5f * vertFov)), 0, 0,
-		0, 0, (zFar / (zFar - zNear)), ((-zFar * zNear) / (zFar - zNear)),
+		1.0f / tanf(0.5f * horzFov), 0, 0, 0,
+		0, 1.0f / tanf(0.5f * vertFov), 0, 0,
+		0, 0, zFar / (zFar - zNear), -zFar * zNear / (zFar - zNear),
 		0, 0, 1, 0;
 
 	return projection;
@@ -118,16 +117,18 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 			// First, work out the depth of this location in screen space. 
 			// We saved the clip space z values in t.screen[0].z(), t.screen[1].z() and t.screen[2].z.
 			// Use barycentric interpolation on these to work out the depth of this pixel.
-			float depth = 0.f;
+			float depth = t.screen[0].z() * b0 + t.screen[1].z() * b1 + t.screen[2].z() * b2;
 
 			// Work out where to sample in the zBuffer. Remember the zBuffer has only one channel,
 			// so your index should be based on the pixel's x and y locations, and the width of the 
 			// z buffer only.
-			int depthIdx = 0;
+			int depthIdx = static_cast<int>(p.x()) + static_cast<int>(p.y()) * width;
 
 			// If your depth is bigger than the current depth, skip drawing this pixel.
 			// Otherwise, replace the zBuffer value at depthIdx with this depth.
 			// ADD YOUR OWN CODE TO DO THIS HERE
+			if (depth > zBuffer[depthIdx]) continue;
+			zBuffer[depthIdx] = depth;
 
 			// *** END YOUR CODE ***
 
@@ -142,27 +143,44 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 			// *** YOUR CODE HERE ***
 			// Add code to calculate the texture coordinates corresponding to P, texP.
 			// Use barycentric interpolation!
-			Eigen::Vector2f texP = Eigen::Vector2f::Zero();
+			Eigen::Vector2f texP = t.texs[0] * b0 + t.texs[1] * b1 + t.texs[2] * b2;
 
 			// Convert this coordinate to a point in texture space
 			// To do so, multiply by the texWidth and texHeight to get to the correct range.
 			// Don't forget to flip the y coordinates! 
-			int texR = 0;
-			int texC = 0;
+
+			int texR = (1.0f - texP.y()) * (texHeight - 1);		// Row index
+			int texC = texP.x() * (texWidth - 1);				// Column index
+
 			// Handle the case where texR or texC end up outside the image!
 			// There are different ways you could do this - for example using 
 			// the modulo (%) operator to wrap around, or clamping to the edges.
 			// Write your own code below to do this - once you're done you should be sure 
 			// that 0 <= texC < texWidth and 0 <= texR < texHeight.
-
+			if (texR >= texHeight) texR = texHeight - 1;
+			if (texR < 0) texR = 0;
+			if (texC >= texWidth) texC = texWidth - 1;
+			if (texC < 0) texC = 0;
+			
 			// Get the value from the texture (hint: use the getPixel function on the albedoTexture).
-			Color texColor{ 255,255,255,255 };
+			Color texColor{ getPixel(albedoTexture, texR, texC, texWidth, texHeight) };
 
 			// Convert it into an Eigen::Vector3f as an albedo
 			// (Optional bonus task, if you checked out the slides on gamma correction:
 			// gamma correct this colour, so the texture doesn't appear overly bright.
 			// should you raise to the power 1/2.2, or 2.2?)
-			Eigen::Vector3f albedo = Eigen::Vector3f::Zero();
+			
+			// Normalise the values
+			float linR = texColor.r / 255.0f;
+			float linG = texColor.g / 255.0f;
+			float linB = texColor.b / 255.0f;
+
+			// Use 2.2 to convert from the display space (gamma-encoded) into linear space (correct light physics)
+			float r = pow(linR, 2.2);
+			float g = pow(linG, 2.2);
+			float b = pow(linB, 2.2);
+
+			Eigen::Vector3f albedo = Eigen::Vector3f(r, g, b);
 
 			// *** END YOUR CODE ***
 
@@ -348,9 +366,9 @@ int main()
 
 	// The main important task = set up the worldToCamera and worldToClip matrices here!
 	// Set up worldToCamera, based on cameraToWorld above
-	Eigen::Matrix4f worldToCamera;
+	Eigen::Matrix4f worldToCamera = cameraToWorld.inverse();
 	// Set up worldToClip, using the projection and worldToCamera matrices
-	Eigen::Matrix4f worldToClip;
+	Eigen::Matrix4f worldToClip = projection * worldToCamera;
 
 	// *** END YOUR CODE ***
 

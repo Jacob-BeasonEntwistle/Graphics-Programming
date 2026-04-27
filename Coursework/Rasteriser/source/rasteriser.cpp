@@ -23,27 +23,22 @@ Eigen::Matrix4f projectionMatrix(int height, int width, float horzFov = 70.f * M
 // --[CREATING MATERIALS]--
 // --Wood--
 Material* bookshelfMaterial = new Wood(
-	Eigen::Vector3f(0.160f, 0.118f, 0.084f),	// Albedo
 	Eigen::Vector3f(0.08f, 0.08f, 0.08f),		// Specular color
 	80.0f										// Specular exponent
 );
 Material* tvStandMaterial = new Wood(
-	Eigen::Vector3f(1.0f, 0.903f, 0.734f),		// Albedo
 	Eigen::Vector3f(0.08f, 0.08f, 0.08f),		// Specular color
 	80.0f										// Specular exponent
 );
 Material* coffeeTableMaterial = new Wood(
-	Eigen::Vector3f(0.098f, 0.054f, 0.022f),	// Albedo
 	Eigen::Vector3f(0.08f, 0.08f, 0.08f),		// Specular color
 	80.0f										// Specular exponent
 );
 Material* windowFrameMaterial = new Wood(
-	Eigen::Vector3f(0.410f, 0.391f, 0.339f),	// Albedo
 	Eigen::Vector3f(0.08f, 0.08f, 0.08f),		// Specular color
 	80.0f										// Specular exponent
 );
 Material* shelfMaterial = new Wood(
-	Eigen::Vector3f(0.325f, 0.378f, 0.311f),	// Albedo
 	Eigen::Vector3f(0.08f, 0.08f, 0.08f),		// Specular color
 	80.0f										// Specular exponent
 );
@@ -60,16 +55,13 @@ Material* tvMaterial = new Glass(
 
 // --Other--
 Material* roomMaterial = new Plaster(
-	Eigen::Vector3f(0.461f, 0.441f, 0.375f),	// Albedo
 	Eigen::Vector3f(1.0f, 1.0f, 1.0f),			// Specular color
 	20.0f										// Specular exponent
 );
-Material* sofaMaterial = new Fabric(
-	Eigen::Vector3f(0.170f, 0.146f, 0.115f)		// Albedo
-);
-Material* floorMaterial = new Carpet(
-	Eigen::Vector3f(0.833f, 0.791f, 0.647f)		// Albedo
-);
+Material* sofaMaterial = new Fabric();
+Material* floorMaterial = new Carpet();
+
+// "Why no albedo in materials?" - Materials describe how light interacts with the surface, textures describe the surface's albedo
 
 int main()
 {
@@ -122,6 +114,27 @@ int main()
 	std::string windowpaneFilename = "../../../models/WindowPane.obj";
 
 
+	// --[CREATING THE TEXTURES FOR EACH OBJECT]--
+	std::vector<uint8_t> leatherTexture;
+	unsigned int leatherTexWidth, leatherTexHeight;
+	lodepng::decode(leatherTexture, leatherTexWidth, leatherTexHeight, "../../../textures/Leather030_Color.png");
+
+	std::vector<uint8_t> carpetTexture;
+	unsigned int carpetTexWidth, carpetTexHeight;
+	lodepng::decode(carpetTexture, carpetTexWidth, carpetTexHeight, "../../../textures/Carpet016_Color.png");
+
+	std::vector<uint8_t> plasterTexture;
+	unsigned int plasterTexWidth, plasterTexHeight;
+	lodepng::decode(plasterTexture, plasterTexWidth, plasterTexHeight, "../../../textures/Plaster001_Color.png");
+
+	std::vector<uint8_t> woodLightTexture;
+	unsigned int woodLightTexWidth, woodLightTexHeight;
+	lodepng::decode(woodLightTexture, woodLightTexWidth, woodLightTexHeight, "../../../textures/Wood095_Color.png");
+
+	std::vector<uint8_t> woodDarkTexture;
+	unsigned int woodDarkTexWidth, woodDarkTexHeight;
+	lodepng::decode(woodDarkTexture, woodDarkTexWidth, woodDarkTexHeight, "../../../textures/Wood066_Color.png");
+
 
 	// --[CREATING THE LIGHTS]--
 	std::vector<std::unique_ptr<Light>> lights;
@@ -150,52 +163,52 @@ int main()
 	roomTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	// Plug the earlier created material into the drawMesh(...) function
 	drawMesh(imageBuffer, zBuffer, roomMesh, roomMaterial, camWorldPos,
-		roomTransform, worldToClip, lights, width, height);
+		roomTransform, worldToClip, lights, width, height, plasterTexture, plasterTexWidth, plasterTexHeight);
 
 	Eigen::Matrix4f floorTransform;
 	floorTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, floorMesh, floorMaterial, camWorldPos,
-		floorTransform, worldToClip, lights, width, height);
+		floorTransform, worldToClip, lights, width, height, carpetTexture, carpetTexWidth, carpetTexHeight);
 
 	Eigen::Matrix4f bookshelfTransform;
 	bookshelfTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, bookshelfMesh, bookshelfMaterial, camWorldPos,
-		bookshelfTransform, worldToClip, lights, width, height);
+		bookshelfTransform, worldToClip, lights, width, height, woodDarkTexture, woodDarkTexWidth, woodDarkTexHeight);
 
 	Eigen::Matrix4f coffeetableTransform;
 	coffeetableTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, coffeetableMesh, coffeeTableMaterial, camWorldPos,
-		coffeetableTransform, worldToClip, lights, width, height);
+		coffeetableTransform, worldToClip, lights, width, height, woodDarkTexture, woodDarkTexWidth, woodDarkTexHeight);
 
 	Eigen::Matrix4f shelfTransform;
 	shelfTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, shelfMesh, shelfMaterial, camWorldPos,
-		shelfTransform, worldToClip, lights, width, height);
+		shelfTransform, worldToClip, lights, width, height, woodLightTexture, woodLightTexWidth, woodLightTexHeight);
 
 	Eigen::Matrix4f sofaTransform;
 	sofaTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, sofaMesh, sofaMaterial, camWorldPos,
-		sofaTransform, worldToClip, lights, width, height);
+		sofaTransform, worldToClip, lights, width, height, leatherTexture, leatherTexWidth, leatherTexHeight);
 
 	Eigen::Matrix4f tvTransform;
 	tvTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, tvMesh, tvMaterial, camWorldPos,
-		tvTransform, worldToClip, lights, width, height);
+		tvTransform, worldToClip, lights, width, height, plasterTexture, plasterTexWidth, plasterTexHeight);
 
 	Eigen::Matrix4f tvStandTransform;
 	tvStandTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, tvstandMesh, tvStandMaterial, camWorldPos,
-		tvStandTransform, worldToClip, lights, width, height);
+		tvStandTransform, worldToClip, lights, width, height, woodLightTexture, woodLightTexWidth, woodLightTexHeight);
 
 	Eigen::Matrix4f windowframeTransform;
 	windowframeTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, windowframeMesh, windowFrameMaterial, camWorldPos,
-		windowframeTransform, worldToClip, lights, width, height);
+		windowframeTransform, worldToClip, lights, width, height, woodLightTexture, woodLightTexWidth, woodLightTexHeight);
 
 	Eigen::Matrix4f windowpaneTransform;
 	windowpaneTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, windowpaneMesh, windowPaneMaterial, camWorldPos,
-		windowpaneTransform, worldToClip, lights, width, height);
+		windowpaneTransform, worldToClip, lights, width, height, plasterTexture, plasterTexWidth, plasterTexHeight);
 
 	// For debug - draw point lights as colored circles so we can see where they are
 	drawPointLights(imageBuffer, width, height, lights);

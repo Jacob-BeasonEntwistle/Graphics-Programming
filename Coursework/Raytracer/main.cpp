@@ -40,13 +40,13 @@ Eigen::Vector3f loadVec3FromConfig(const nlohmann::json& config)
 
 int main(int argc, char* argv[]) {
 
-	// *** Load the config file ***
+	// --[Load the config file]--
 	auto config = loadConfig("../config/config.json");
 
 	const int pixHeight = config["pixHeight"], pixWidth = config["pixWidth"];
 	const int nChannels = 4;
 
-	// *** Set up camera and output image ***
+	// --[Set up camera and output image]--
 	Camera cam(
 		loadVec3FromConfig(config["cameraPos"]),
 		loadVec3FromConfig(config["cameraForward"]),
@@ -63,6 +63,7 @@ int main(int argc, char* argv[]) {
 		aqua(0.f, .8f, .8f),
 		lavender(178.f / 255.f, 164.f / 255.f, 212.f / 255.f);
 
+	// --[Scene Colours]--
 	Eigen::Vector3f
 		room(0.461f, 0.441f, 0.375f),
 		floor(0.833f, 0.791f, 0.647f),
@@ -74,7 +75,7 @@ int main(int argc, char* argv[]) {
 		shelf(0.325f, 0.378f, 0.311f),
 		tv(0.009f, 0.007f, 0.005f);
 
-	// *** Load shaders and textures ***
+	// --[Load shaders and textures]--
 	std::vector<uint8_t> spotTexture;
 	unsigned int width, height;
 	lodepng::decode(spotTexture, width, height, "../models/spot.png");
@@ -87,6 +88,7 @@ int main(int argc, char* argv[]) {
 	MirrorShader mirrorShader;
 	TexCoordTestShader texCoordTestShader;
 
+	// --[Scene Shaders]--
 	LambertianShader
 		roomLambertianShader(room),
 		floorLambertianShader(floor),
@@ -98,13 +100,20 @@ int main(int argc, char* argv[]) {
 		shelfLambertianShader(shelf);
 	PhongShader tvPhongShader(tv, tv, 10.0f, false);
 
-	// *** Set up scene ***
+	// --[Set up scene]--
 	Scene scene;
 
-	// Optional code: here's how to add the spot mesh to the scene, using a BVH
-	// Try enabling this and comparing it to the non-BVH version below!
+	// [With BVN: 97.305 seconds]
+	// [Without BVH: ~1700 seconds]
+
+	// TEST 1: Adding the spot mesh to the scene using a BVH
 	/*Model spotModel("../models/spot.obj");
 	scene.renderables.push_back(std::make_shared<BVHNode>(spotModel, &spotShader, 4, rotateY(M_PI / 4.0f)));*/
+
+	// TEST 2: Adding the mesh without using the BVH.
+	/*Model spotModel("../models/spot.obj");
+	scene.renderables.push_back(std::make_shared<Mesh>(&spotShader, &spotModel));
+	scene.renderables.back()->modelToWorld(rotateY(M_PI / 4.0f));*/
 
 	Model roomModel("../../../models/Room.obj");
 	scene.renderables.push_back(std::make_shared<BVHNode>(roomModel, &roomLambertianShader, 4, rotateY(M_PI)));
@@ -136,25 +145,13 @@ int main(int argc, char* argv[]) {
 	Model windowPaneModel("../../../models/WindowPane.obj");
 	scene.renderables.push_back(std::make_shared<BVHNode>(windowPaneModel, &mirrorShader, 4, rotateY(M_PI)));
 
-	// Here's how to add the mesh without using the BVH.
-	// Try comparing performance to the BVH version above.
-	
-	// [With BVN: 97.305 seconds]
-	// [Without BVH: ~1700 seconds]
-
-	/*Model spotModel("../models/spot.obj");
-	scene.renderables.push_back(std::make_shared<Mesh>(&spotShader, &spotModel));
-	scene.renderables.back()->modelToWorld(rotateY(M_PI / 4.0f));*/
-
-	// *** Add lights to scene ***
+	// --[Add lights to scene]--
 	Eigen::Vector3f ambientLight(.1f, .1f, .1f);
 
 	std::vector<std::unique_ptr<Light>> lightSources;
 	lightSources.push_back(std::make_unique<PointLight>(Eigen::Vector3f(0.0f, 2.0f, 0.0f), 3.f * Eigen::Vector3f(1.f, 1.f, 1.f)));
-	/*lightSources.push_back(std::make_unique<DirectionalLight>(Eigen::Vector3f(0.f, -1.f, 1.f), .5f * Eigen::Vector3f(1.f, 1.f, 1.f)));*/
 
-	// *** Render the scene ***
-
+	// --[Render the scene]--
 	// Shuffling the scanline order gets better CPU usage between threads
 	// when some lines take longer to render than others.
 	std::vector<unsigned int> scanlines(pixHeight);
@@ -214,7 +211,7 @@ int main(int argc, char* argv[]) {
 
 	std::cout << "\nRender duration " << std::chrono::duration_cast<std::chrono::milliseconds>(renderTime).count() * 1e-3f << " seconds." << std::endl;
 
-	// *** Save the output image ***
+	// --[Save the output image]--
 	int errorCode;
 	errorCode = lodepng::encode(config["outputFilename"], outImage, pixWidth, pixHeight);
 	if (errorCode) { // check the error code, in case an error occurred.
