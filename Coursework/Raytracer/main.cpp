@@ -57,11 +57,11 @@ int main(int argc, char* argv[]) {
 
 	std::vector<uint8_t> outImage(pixHeight * pixWidth * nChannels);
 
-	Eigen::Vector3f
+	/*Eigen::Vector3f
 		red(1.f, 0.f, 0.f),
 		blue(0.f, 0.f, 1.f),
 		aqua(0.f, .8f, .8f),
-		lavender(178.f / 255.f, 164.f / 255.f, 212.f / 255.f);
+		lavender(178.f / 255.f, 164.f / 255.f, 212.f / 255.f);*/
 
 	// --[Scene Colours]--
 	Eigen::Vector3f
@@ -80,13 +80,12 @@ int main(int argc, char* argv[]) {
 	unsigned int width, height;
 	lodepng::decode(spotTexture, width, height, "../models/spot.png");
 
-	LambertianShader redLambertianShader(red);
+	/*LambertianShader redLambertianShader(red);
 	PhongShader bluePlasticShader(blue, Eigen::Vector3f(1.f, 1.f, 1.f), 100.f);
 	LambertianShader aquaLambertianShader(aqua);
 	LambertianShader lavenderLambertianShader(lavender);
-	TexturedLambertianShader spotShader(&spotTexture, width, height);
-	MirrorShader mirrorShader;
-	TexCoordTestShader texCoordTestShader;
+	TexturedLambertianShader spotShader(&spotTexture, width, height);*/
+	/*TexCoordTestShader texCoordTestShader;*/
 
 	// --[Scene Shaders]--
 	LambertianShader
@@ -99,6 +98,7 @@ int main(int argc, char* argv[]) {
 		windowFrameLambertianShader(windowFrame),
 		shelfLambertianShader(shelf);
 	PhongShader tvPhongShader(tv, tv, 10.0f, false);
+	MirrorShader mirrorShader;
 
 	// --[Set up scene]--
 	Scene scene;
@@ -119,7 +119,7 @@ int main(int argc, char* argv[]) {
 	scene.renderables.push_back(std::make_shared<BVHNode>(roomModel, &roomLambertianShader, 4, rotateY(M_PI)));
 
 	Model floorModel("../../../models/Floor.obj");
-	scene.renderables.push_back(std::make_shared<BVHNode>(roomModel, &floorLambertianShader, 4, rotateY(M_PI)));
+	scene.renderables.push_back(std::make_shared<BVHNode>(floorModel, &floorLambertianShader, 4, rotateY(M_PI) * uniformScale(10.0f)));
 
 	Model bookshelfModel("../../../models/Bookshelf.obj");
 	scene.renderables.push_back(std::make_shared<BVHNode>(bookshelfModel, &bookshelfLambertianShader, 4, rotateY(M_PI)));
@@ -146,7 +146,7 @@ int main(int argc, char* argv[]) {
 	scene.renderables.push_back(std::make_shared<BVHNode>(windowPaneModel, &mirrorShader, 4, rotateY(M_PI)));
 
 	// --[Add lights to scene]--
-	Eigen::Vector3f ambientLight(.1f, .1f, .1f);
+	Eigen::Vector3f ambientLight(.3f, .3f, .3f);
 
 	std::vector<std::unique_ptr<Light>> lightSources;
 	lightSources.push_back(std::make_unique<PointLight>(Eigen::Vector3f(0.0f, 2.0f, 0.0f), 3.f * Eigen::Vector3f(1.f, 1.f, 1.f)));

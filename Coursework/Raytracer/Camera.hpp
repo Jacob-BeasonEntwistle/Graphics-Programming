@@ -21,8 +21,9 @@ public:
 		:location_(location)
 	{
 		Eigen::Vector3f forwardVec = forward.normalized();
-		Eigen::Vector3f rightVec = (up.cross(forwardVec)).normalized();
-		Eigen::Vector3f upVec = (forward.cross(rightVec)).normalized();
+		// Draws the scene left to right instead of right to left (mirrors it on the X axis)
+		Eigen::Vector3f rightVec = (forward.cross(up)).normalized();
+		Eigen::Vector3f upVec = (rightVec.cross(forward)).normalized();
 
 		float aspect = static_cast<float>(pixWidth) / static_cast<float>(pixHeight);
 

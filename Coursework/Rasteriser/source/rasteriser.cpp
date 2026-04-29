@@ -89,7 +89,7 @@ int main()
 	Eigen::Matrix4f projection = projectionMatrix(height, width);
 
 	// This matrix rotates the camera, tilting it down, then translates it up to make it look down on the scene.
-	Eigen::Matrix4f cameraToWorld = translationMatrix(Eigen::Vector3f(0.0f, 0.8f, 0.0f)) * rotateXMatrix(0.26f);
+	Eigen::Matrix4f cameraToWorld = translationMatrix(Eigen::Vector3f(0.0f, 0.5f, 1.0f)) * rotateXMatrix(0.13f);
 
 	Eigen::Vector3f camWorldPos = (cameraToWorld * Eigen::Vector4f(0, 0, 0, 1)).block<3, 1>(0, 0);
 
@@ -171,7 +171,7 @@ int main()
 		floorTransform, worldToClip, lights, width, height, carpetTexture, carpetTexWidth, carpetTexHeight);
 
 	Eigen::Matrix4f bookshelfTransform;
-	bookshelfTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
+	bookshelfTransform = translationMatrix(sceneOrigin - Eigen::Vector3f(0.05f, 0.0f, 0.0f)) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, bookshelfMesh, bookshelfMaterial, camWorldPos,
 		bookshelfTransform, worldToClip, lights, width, height, woodDarkTexture, woodDarkTexWidth, woodDarkTexHeight);
 

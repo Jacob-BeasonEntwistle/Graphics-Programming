@@ -195,6 +195,7 @@ public:
 				}
 			}
 		}
+		aabb_.max += Eigen::Vector3f::Ones() * 1e-3;
 	}
 
 	virtual AABB getAABB() const override
