@@ -19,6 +19,7 @@ add_executable(rasteriser
     source/Triangle.hpp
     source/TriangleRenderer.hpp
     source/Material.hpp
+    source/ChromaticAberration.hpp
 )
 
 target_link_libraries(rasteriser 

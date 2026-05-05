@@ -7,6 +7,7 @@
 #include "TriangleRenderer.hpp"
 #include "MeshRenderer.hpp"
 #include "Material.hpp"
+#include "ChromaticAberration.hpp"
 
 Eigen::Matrix4f projectionMatrix(int height, int width, float horzFov = 70.f * M_PI / 180.f, float zFar = 10.f, float zNear = 0.1f)
 {
@@ -71,7 +72,8 @@ int main()
 	const int nChannels = 4;
 
 	// Set up an image buffer
-	std::vector<uint8_t> imageBuffer(height*width*nChannels);
+	std::vector<uint8_t> imageBuffer(height * width * nChannels);
+	std::vector<uint8_t> imageBufferChromatic(height * width * nChannels);
 	std::vector<float> zBuffer(height * width);
 
 	// This line sets the image to black initially.
@@ -230,6 +232,9 @@ int main()
 	delete sofaMaterial;
 	delete floorMaterial;
 
+	ChromaticAberration ca(500.0f, 1.0f, 0.95f, 0.9f);
+	auto result = ca.applyAberration(imageBuffer, imageBufferChromatic, width, height, nChannels);
+
     // Save the image
     int errorCode;
         errorCode = lodepng::encode(outputFilename, imageBuffer, width, height);
@@ -237,6 +242,11 @@ int main()
             std::cout << "lodepng error encoding image: " << lodepng_error_text(errorCode) << std::endl;
             return errorCode;
         }
+		errorCode = lodepng::encode("output_aberrated.png", imageBufferChromatic, width, height);
+		if (errorCode) { // check the error code, in case an error occurred.
+			std::cout << "lodepng error encoding image: " << lodepng_error_text(errorCode) << std::endl;
+			return errorCode;
+		}
 
     return 0;
 }

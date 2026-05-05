@@ -33,3 +33,5 @@ As an example, below I have referenced assets used in the Labs.
 * "Plaster 001" https://ambientcg.com/a/Plaster001, licensed under the Creative Commons CC0 1.0 Universal License.
 
 * "Carpet 016" https://ambientcg.com/a/Carpet016, licensed under the Creative Commons CC0 1.0 Universal License.
+
+* "Plastic011" https://ambientcg.com/a/Plastic011, licensed under the Creative Commons CC0 1.0 Universal License.

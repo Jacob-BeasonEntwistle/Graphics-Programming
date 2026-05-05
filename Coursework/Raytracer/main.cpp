@@ -14,9 +14,12 @@
 #include "LambertianShader.hpp"
 #include "TexturedLambertianShader.hpp"
 #include "PhongShader.hpp"
+#include "TexturedPhongShader.hpp"
 #include "MirrorShader.hpp"
 #include "TexCoordTestShader.hpp"
+#include "GlassShader.hpp"
 #include "Model.hpp"
+#include "ChromaticAberration.hpp"
 #include <fstream>
 
 /// <summary>
@@ -38,6 +41,13 @@ Eigen::Vector3f loadVec3FromConfig(const nlohmann::json& config)
 	return Eigen::Vector3f(config[0], config[1], config[2]);
 }
 
+//float chromaticAberration(float radius, float slope, float unchangedRadius) {
+//	if (radius < unchangedRadius) {
+//		return radius;
+//	}
+//	return slope * radius + unchangedRadius * (1 - slope);
+//}
+
 int main(int argc, char* argv[]) {
 
 	// --[Load the config file]--
@@ -56,12 +66,7 @@ int main(int argc, char* argv[]) {
 
 
 	std::vector<uint8_t> outImage(pixHeight * pixWidth * nChannels);
-
-	/*Eigen::Vector3f
-		red(1.f, 0.f, 0.f),
-		blue(0.f, 0.f, 1.f),
-		aqua(0.f, .8f, .8f),
-		lavender(178.f / 255.f, 164.f / 255.f, 212.f / 255.f);*/
+	std::vector<uint8_t> outImageChromatic(pixHeight * pixWidth * nChannels);
 
 	// --[Scene Colours]--
 	Eigen::Vector3f
@@ -76,29 +81,54 @@ int main(int argc, char* argv[]) {
 		tv(0.009f, 0.007f, 0.005f);
 
 	// --[Load shaders and textures]--
-	std::vector<uint8_t> spotTexture;
-	unsigned int width, height;
-	lodepng::decode(spotTexture, width, height, "../models/spot.png");
+	// Create a vector of paths for the textures to be loaded
+	std::vector<std::string> texturePaths;
+	texturePaths.push_back("../../../textures/Leather030_Color.png");	// [0]
+	texturePaths.push_back("../../../textures/Carpet016_Color.png");	// [1]
+	texturePaths.push_back("../../../textures/Plaster001_Color.png");	// [2]
+	texturePaths.push_back("../../../textures/Wood095_Color.png");		// [3]
+	texturePaths.push_back("../../../textures/Wood066_Color.png");		// [4]
+	texturePaths.push_back("../../../textures/Plastic011_Color.png");	// [5]
 
-	/*LambertianShader redLambertianShader(red);
-	PhongShader bluePlasticShader(blue, Eigen::Vector3f(1.f, 1.f, 1.f), 100.f);
-	LambertianShader aquaLambertianShader(aqua);
-	LambertianShader lavenderLambertianShader(lavender);
-	TexturedLambertianShader spotShader(&spotTexture, width, height);*/
-	/*TexCoordTestShader texCoordTestShader;*/
+	// Create vectors of the textures, widths, and heights to store the values for later use
+	std::vector<std::vector<uint8_t>> textures;
+	std::vector<unsigned int> widths, heights;
+
+	// For each path in the vector of paths create a texture, width, and height variable and decode the png into those values
+	for (std::string path : texturePaths) {
+		std::vector<uint8_t> texture;
+		unsigned int width, height;
+		unsigned int error = lodepng::decode(texture, width, height, path);
+
+		// Check if lodepng returned null
+		if (error != 0) {
+			std::cerr << "Error: Failed to load texture " << path << " : " << lodepng_error_text(error) << std::endl;
+			return 1;
+		}
+
+		// Checks if the texture is empty or the width/height are 0
+		if (texture.empty() || width == 0 || height == 0) {
+			std::cerr << "Error: Invalid texture data" << std::endl;
+			return 1;
+		}
+
+		// If no errors occur, store the textures (avoids storing empty textures)
+		textures.push_back(texture);
+		widths.push_back(width);
+		heights.push_back(height);
+	}
 
 	// --[Scene Shaders]--
-	LambertianShader
-		roomLambertianShader(room),
-		floorLambertianShader(floor),
-		sofaLambertianShader(sofa),
-		bookshelfLambertianShader(bookshelf),
-		tvStandLambertianShader(tvStand),
-		coffeeTableLambertianShader(coffeeTable),
-		windowFrameLambertianShader(windowFrame),
-		shelfLambertianShader(shelf);
-	PhongShader tvPhongShader(tv, tv, 10.0f, false);
+	TexturedLambertianShader
+		leatherTexLambertianShader(&textures[0], widths[0], heights[0]),
+		carpetTexLambertianShader(&textures[1], widths[1], heights[1]),
+		plasterTexLambertianShader(&textures[2], widths[2], heights[2]);
+	TexturedPhongShader
+		DarkWoodTexPhongShader(&textures[3], widths[3], heights[3], Eigen::Vector3f(0.2f, 0.2f, 0.2f), 50.0f),
+		LightWoodTexPhongShader(&textures[4], widths[4], heights[4], Eigen::Vector3f(0.1f, 0.1f, 0.1f), 30.0f),
+		plasticPhongShader(&textures[5], widths[5], heights[5], Eigen::Vector3f(0.6f, 0.6f, 0.6f), 70.0f);
 	MirrorShader mirrorShader;
+	GlassShader glassShader(1.4f, 50.0f);
 
 	// --[Set up scene]--
 	Scene scene;
@@ -115,35 +145,32 @@ int main(int argc, char* argv[]) {
 	scene.renderables.push_back(std::make_shared<Mesh>(&spotShader, &spotModel));
 	scene.renderables.back()->modelToWorld(rotateY(M_PI / 4.0f));*/
 
-	Model roomModel("../../../models/Room.obj");
-	scene.renderables.push_back(std::make_shared<BVHNode>(roomModel, &roomLambertianShader, 4, rotateY(M_PI)));
-
-	Model floorModel("../../../models/Floor.obj");
-	scene.renderables.push_back(std::make_shared<BVHNode>(floorModel, &floorLambertianShader, 4, rotateY(M_PI) * uniformScale(10.0f)));
+	Model roomModel("../../../models/Room_complete.obj");
+	scene.renderables.push_back(std::make_shared<BVHNode>(roomModel, &plasterTexLambertianShader, 4, rotateY(M_PI)));
 
 	Model bookshelfModel("../../../models/Bookshelf.obj");
-	scene.renderables.push_back(std::make_shared<BVHNode>(bookshelfModel, &bookshelfLambertianShader, 4, rotateY(M_PI)));
+	scene.renderables.push_back(std::make_shared<BVHNode>(bookshelfModel, &DarkWoodTexPhongShader, 4, rotateY(M_PI)));
 
 	Model coffeeTableModel("../../../models/CoffeeTable.obj");
-	scene.renderables.push_back(std::make_shared<BVHNode>(coffeeTableModel, &coffeeTableLambertianShader, 4, rotateY(M_PI)));
+	scene.renderables.push_back(std::make_shared<BVHNode>(coffeeTableModel, &DarkWoodTexPhongShader, 4, rotateY(M_PI)));
 
 	Model shelfModel("../../../models/Shelf.obj");
-	scene.renderables.push_back(std::make_shared<BVHNode>(shelfModel, &shelfLambertianShader, 4, rotateY(M_PI)));
+	scene.renderables.push_back(std::make_shared<BVHNode>(shelfModel, &LightWoodTexPhongShader, 4, rotateY(M_PI)));
 
 	Model sofaModel("../../../models/Sofa.obj");
-	scene.renderables.push_back(std::make_shared<BVHNode>(sofaModel, &sofaLambertianShader, 4, rotateY(M_PI)));
+	scene.renderables.push_back(std::make_shared<BVHNode>(sofaModel, &leatherTexLambertianShader, 4, rotateY(M_PI)));
 
 	Model tvModel("../../../models/TV.obj");
-	scene.renderables.push_back(std::make_shared<BVHNode>(tvModel, &tvPhongShader, 4, rotateY(M_PI)));
+	scene.renderables.push_back(std::make_shared<BVHNode>(tvModel, &plasticPhongShader, 4, rotateY(M_PI)));
 
 	Model tvStandModel("../../../models/TVStand.obj");
-	scene.renderables.push_back(std::make_shared<BVHNode>(tvStandModel, &tvStandLambertianShader, 4, rotateY(M_PI)));
+	scene.renderables.push_back(std::make_shared<BVHNode>(tvStandModel, &LightWoodTexPhongShader, 4, rotateY(M_PI)));
 
 	Model windowFrameModel("../../../models/WindowFrame.obj");
-	scene.renderables.push_back(std::make_shared<BVHNode>(windowFrameModel, &windowFrameLambertianShader, 4, rotateY(M_PI)));
+	scene.renderables.push_back(std::make_shared<BVHNode>(windowFrameModel, &LightWoodTexPhongShader, 4, rotateY(M_PI)));
 
 	Model windowPaneModel("../../../models/WindowPane.obj");
-	scene.renderables.push_back(std::make_shared<BVHNode>(windowPaneModel, &mirrorShader, 4, rotateY(M_PI)));
+	scene.renderables.push_back(std::make_shared<BVHNode>(windowPaneModel, &glassShader, 4, rotateY(M_PI)));
 
 	// --[Add lights to scene]--
 	Eigen::Vector3f ambientLight(.3f, .3f, .3f);
@@ -167,6 +194,7 @@ int main(int argc, char* argv[]) {
 
 	Ray ray = cam.getRay(531, 325);
 	HitInfo hitInfo;
+	hitInfo.shader = nullptr;
 	scene.intersect(ray, 1e-6f, 1e6f, hitInfo, VISIBLE_BITMASK);
 	float x = hitInfo.hitT;
 
@@ -176,7 +204,13 @@ int main(int argc, char* argv[]) {
 		for (int x = 0; x < pixWidth; ++x) {
 			Ray ray = cam.getRay(x, scanlines[y]);
 			HitInfo hitInfo;
+			hitInfo.shader = nullptr;
 			if (scene.intersect(ray, 1e-6f, 1e6f, hitInfo, VISIBLE_BITMASK)) {
+				if (hitInfo.shader == nullptr) {
+					std::cerr << "Error: Shader is null!" << std::endl;
+					continue;
+				}
+
 				Eigen::Vector3f color = hitInfo.shader->getColor(
 					hitInfo, &scene,
 					lightSources, ambientLight,
@@ -204,8 +238,54 @@ int main(int argc, char* argv[]) {
 		if (omp_get_thread_num() == omp_get_num_threads()-1) {
 			std::clog << "\rScanlines remaining: " << (pixHeight - y) << ' ' << std::flush;
 		}
-
 	}
+
+	/*Inline code for Chromatic Aberration
+	
+	float unchangedRadius = 500.0f;
+	float slopeR = 1.0f, slopeG = .95f, slopeB = .9f;
+
+	for (int y = 0; y < pixHeight; ++y) {
+		for (int x = 0; x < pixWidth; ++x) {
+			float xDist = x - pixWidth / 2;
+			float yDist = y - pixHeight / 2;
+
+			float radius = sqrt(xDist * xDist + yDist * yDist);
+
+			if (radius < unchangedRadius) {
+				for (int c = 0; c < nChannels; c++) {
+					outImageChromatic[(x + y * pixWidth) * nChannels + c] = outImage[(x + y * pixWidth) * nChannels + c];
+				}
+			}
+			else {
+				float redRadius = chromaticAberration(radius, slopeR, unchangedRadius);
+				float greenRadius = chromaticAberration(radius, slopeG, unchangedRadius);
+				float blueRadius = chromaticAberration(radius, slopeB, unchangedRadius);
+
+				float xNorm = xDist / radius;
+				float yNorm = yDist / radius;
+
+				int rX = pixWidth / 2 + xNorm * redRadius;
+				int rY = pixHeight / 2 + yNorm * redRadius;
+
+				int gX = pixWidth / 2 + xNorm * greenRadius;
+				int gY = pixHeight / 2 + yNorm * greenRadius;
+
+				int bX = pixWidth / 2 + xNorm * blueRadius;
+				int bY = pixHeight / 2 + yNorm * blueRadius;
+
+				outImageChromatic[(x + y * pixWidth) * nChannels + 0] = outImage[(rX + rY * pixWidth) * nChannels + 0];
+				outImageChromatic[(x + y * pixWidth) * nChannels + 1] = outImage[(gX + gY * pixWidth) * nChannels + 1];
+				outImageChromatic[(x + y * pixWidth) * nChannels + 2] = outImage[(bX + bY * pixWidth) * nChannels + 2];
+				outImageChromatic[(x + y * pixWidth) * nChannels + 3] = outImage[(x + y * pixWidth) * nChannels + 3];
+			}
+		}
+	}*/
+
+	// Initialise the chromatic aberration with the unchangedRadius, and different slopes for each RGB channel
+	ChromaticAberration ca(500.0f, 1.0f, 0.95f, 0.9f);
+	// Apply the post-processing chromatic aberration to simulate the required lens distortion
+	auto result = ca.applyAberration(outImage, outImageChromatic, pixWidth, pixHeight, nChannels);
 
 	auto renderTime = std::chrono::steady_clock::now() - startTime;
 
@@ -214,6 +294,11 @@ int main(int argc, char* argv[]) {
 	// --[Save the output image]--
 	int errorCode;
 	errorCode = lodepng::encode(config["outputFilename"], outImage, pixWidth, pixHeight);
+	if (errorCode) { // check the error code, in case an error occurred.
+		std::cout << "lodepng error encoding image: " << lodepng_error_text(errorCode) << std::endl;
+		return errorCode;
+	}
+	errorCode = lodepng::encode("output_aberrated.png", outImageChromatic, pixWidth, pixHeight);
 	if (errorCode) { // check the error code, in case an error occurred.
 		std::cout << "lodepng error encoding image: " << lodepng_error_text(errorCode) << std::endl;
 		return errorCode;

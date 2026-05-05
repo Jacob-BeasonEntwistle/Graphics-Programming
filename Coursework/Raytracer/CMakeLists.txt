@@ -35,9 +35,14 @@ set(SHADERS_SOURCE_GROUP
     GlassShader.hpp
 )
 
+set(POSTPROCESSING_SOURCE_GROUP
+   ChromaticAberration.hpp
+)
+
 source_group("Header Files\\Entities" FILES ${ENTITIES_SOURCE_GROUP})
 source_group("Header Files\\Lights" FILES ${LIGHTS_SOURCE_GROUP})
 source_group("Header Files\\Shaders" FILES ${SHADERS_SOURCE_GROUP})
+source_group("Header Files\\PostProcessing" FILES ${POSTPROCESSING_SOURCE_GROUP})
 
 add_executable(main
     main.cpp
@@ -56,6 +61,7 @@ add_executable(main
     ${ENTITIES_SOURCE_GROUP}
     ${LIGHTS_SOURCE_GROUP}
     ${SHADERS_SOURCE_GROUP}
+    ${POSTPROCESSING_SOURCE_GROUP}
 )
 
 
