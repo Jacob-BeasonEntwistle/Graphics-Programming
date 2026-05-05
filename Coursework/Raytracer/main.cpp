@@ -86,8 +86,8 @@ int main(int argc, char* argv[]) {
 	texturePaths.push_back("../../../textures/Leather030_Color.png");	// [0]
 	texturePaths.push_back("../../../textures/Carpet016_Color.png");	// [1]
 	texturePaths.push_back("../../../textures/Plaster001_Color.png");	// [2]
-	texturePaths.push_back("../../../textures/Wood095_Color.png");		// [3]
-	texturePaths.push_back("../../../textures/Wood066_Color.png");		// [4]
+	texturePaths.push_back("../../../textures/Wood066_Color.png");		// [3]
+	texturePaths.push_back("../../../textures/Wood095_Color.png");		// [4]
 	texturePaths.push_back("../../../textures/Plastic011_Color.png");	// [5]
 
 	// Create vectors of the textures, widths, and heights to store the values for later use
