@@ -192,7 +192,7 @@ int main(int argc, char* argv[]) {
 
 	auto startTime = std::chrono::steady_clock::now();
 
-	// Anti-Aliasing (AA) variables
+	// Anti-Aliasing using stochastic supersampling (SSAA)
 	// Reducing the number of samples reduces the affect of the AA but increases the render time
 	// Increasing the num of samples increases the affect of AA but increases render time
 	int samplesPerPixel = 32;
@@ -206,7 +206,7 @@ int main(int argc, char* argv[]) {
 
 			// For each sample taken per pixel
 			for (int s = 0; s < samplesPerPixel; s++) {
-				// Generate a random jittered X and Y values
+				// Generate a random jittered pixel offsets (stochastic SSAA)
 				float jitterX = x + randomFloat() - 0.5f;
 				float jitterY = scanlines[y] + randomFloat() - 0.5f;
 
