@@ -42,3 +42,27 @@
 
 # debug information files
 *.dwo
+
+# visual studio build intermediates
+*.tlog
+*.log
+*.recipe
+*.lastbuildstate
+*.ipch
+
+# stamp
+*.stamp
+
+*.dir/
+CMakeFiles/
+
+# visual studio output folders anywhere
+Debug/
+Release/
+x64/
+
+# Visual Studio project files
+*.vcxproj*
+*.sln
+
+.vs/

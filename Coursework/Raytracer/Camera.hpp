@@ -45,6 +45,17 @@ public:
 			static_cast<float>(pixY) * up1pix_;
 
 		ray.direction = (pixelPos - location_).normalized();
+
+		// ::DEBUGGING:: to test whether the ray directions are different
+		/*static int debugCount = 0;
+		if (debugCount < 5) {
+			std::cout << "Ray dir: "
+				<< ray.direction.x() << ", "
+				<< ray.direction.y() << ", "
+				<< ray.direction.z() << std::endl;
+			debugCount++;
+		}*/
+
 		return ray;
 	}
 };

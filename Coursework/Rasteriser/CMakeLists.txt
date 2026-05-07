@@ -9,7 +9,6 @@ include_directories(../../3rdParty/eigen-3.4.0)
 
 add_executable(rasteriser
     source/rasteriser.cpp
-    source/Camera.hpp
     source/Image.hpp
     source/Light.hpp
     source/LinAlg.hpp

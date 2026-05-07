@@ -41,18 +41,18 @@ Eigen::Vector3f loadVec3FromConfig(const nlohmann::json& config)
 	return Eigen::Vector3f(config[0], config[1], config[2]);
 }
 
-//float chromaticAberration(float radius, float slope, float unchangedRadius) {
-//	if (radius < unchangedRadius) {
-//		return radius;
-//	}
-//	return slope * radius + unchangedRadius * (1 - slope);
-//}
+// Returns a random float value between 0 and 1
+// Used for the jitter of Anti-Aliasing
+float randomFloat() {
+	return static_cast<float>(rand()) / RAND_MAX * 1.0f;
+}
 
 int main(int argc, char* argv[]) {
 
 	// --[Load the config file]--
 	auto config = loadConfig("../config/config.json");
 
+	// ::DEBUGGING:: Could divide pixHeight & pixWidth by 2 to reduce resolution = faster render time
 	const int pixHeight = config["pixHeight"], pixWidth = config["pixWidth"];
 	const int nChannels = 4;
 
@@ -173,10 +173,10 @@ int main(int argc, char* argv[]) {
 	scene.renderables.push_back(std::make_shared<BVHNode>(windowPaneModel, &glassShader, 4, rotateY(M_PI)));
 
 	// --[Add lights to scene]--
-	Eigen::Vector3f ambientLight(.3f, .3f, .3f);
+	Eigen::Vector3f ambientLight(0.02f, 0.02f, 0.02f);
 
 	std::vector<std::unique_ptr<Light>> lightSources;
-	lightSources.push_back(std::make_unique<PointLight>(Eigen::Vector3f(0.0f, 2.0f, 0.0f), 3.f * Eigen::Vector3f(1.f, 1.f, 1.f)));
+	lightSources.push_back(std::make_unique<PointLight>(Eigen::Vector3f(0.0f, 2.0f, 0.0f), 3.0f * Eigen::Vector3f(1.f, 1.f, 1.f)));
 
 	// --[Render the scene]--
 	// Shuffling the scanline order gets better CPU usage between threads
@@ -192,48 +192,81 @@ int main(int argc, char* argv[]) {
 
 	auto startTime = std::chrono::steady_clock::now();
 
-	Ray ray = cam.getRay(531, 325);
-	HitInfo hitInfo;
-	hitInfo.shader = nullptr;
-	scene.intersect(ray, 1e-6f, 1e6f, hitInfo, VISIBLE_BITMASK);
-	float x = hitInfo.hitT;
+	// Anti-Aliasing (AA) variables
+	// Reducing the number of samples reduces the affect of the AA but increases the render time
+	// Increasing the num of samples increases the affect of AA but increases render time
+	int samplesPerPixel = 32;
 
-
-	#pragma omp parallel for
+	// Threading disabled to allow random function of AA to work as intended - creating multiple rays with random offsets
+	//#pragma omp parallel for
 	for (int y = 0; y < pixHeight; ++y) {
 		for (int x = 0; x < pixWidth; ++x) {
-			Ray ray = cam.getRay(x, scanlines[y]);
-			HitInfo hitInfo;
-			hitInfo.shader = nullptr;
-			if (scene.intersect(ray, 1e-6f, 1e6f, hitInfo, VISIBLE_BITMASK)) {
-				if (hitInfo.shader == nullptr) {
-					std::cerr << "Error: Shader is null!" << std::endl;
-					continue;
+			// Anti-Aliasing implemented using stochastic (random) supersampling
+			Eigen::Vector3f totalColor(0.0f, 0.0f, 0.0f);	// Create a total colour variable
+
+			// For each sample taken per pixel
+			for (int s = 0; s < samplesPerPixel; s++) {
+				// Generate a random jittered X and Y values
+				float jitterX = x + randomFloat() - 0.5f;
+				float jitterY = scanlines[y] + randomFloat() - 0.5f;
+
+				// ::DEBUGGING:: to test whether the jitter values are changing
+				/*if (x == pixWidth / 2 && y == pixHeight / 2 && s < 5) {
+					std::cout << jitterX << ", " << jitterY << std::endl;
+				}*/
+
+				// Shoot a ray using that value
+				Ray ray = cam.getRay(jitterX, jitterY);
+				HitInfo hitInfo;
+				hitInfo.shader = nullptr;
+
+				// If the ray hits an object in the scene
+				if (scene.intersect(ray, 1e-6f, 1e6f, hitInfo, VISIBLE_BITMASK)) {
+					if (hitInfo.shader == nullptr) {
+						std::cerr << "Error: Shader is null!" << std::endl;
+						continue;
+					}
+
+					// Get the colour of that point
+					Eigen::Vector3f color = hitInfo.shader->getColor(
+						hitInfo, &scene,
+						lightSources, ambientLight,
+						0, config["maxBounces"]);
+
+					// And add it to the total colour
+					totalColor += color;
 				}
-
-				Eigen::Vector3f color = hitInfo.shader->getColor(
-					hitInfo, &scene,
-					lightSources, ambientLight,
-					0, config["maxBounces"]);
-
-				color.x() = std::min(color.x(), 1.f);
-				color.y() = std::min(color.y(), 1.f);
-				color.z() = std::min(color.z(), 1.f);
-
-
-				int line = (pixHeight - scanlines[y]) - 1;
-				outImage[(x + line * pixWidth) * nChannels + 0] = color.x() * 255;
-				outImage[(x + line * pixWidth) * nChannels + 1] = color.y() * 255;
-				outImage[(x + line * pixWidth) * nChannels + 2] = color.z() * 255;
-				outImage[(x + line * pixWidth) * nChannels + 3] = 255;
+				else {
+					// If ray misses an object in the scene, it returns black
+					Eigen::Vector3f color(0.0f, 0.0f, 0.0f);
+					// Black is still added to the total colour
+					totalColor += color;
+				}
 			}
-			else {
-				int line = (pixHeight - scanlines[y]) - 1;
-				outImage[(x + line * pixWidth) * nChannels + 0] = 0;
-				outImage[(x + line * pixWidth) * nChannels + 1] = 0;
-				outImage[(x + line * pixWidth) * nChannels + 2] = 0;
-				outImage[(x + line * pixWidth) * nChannels + 3] = 255;
-			}
+
+			// Divide the total colour value by the number of samples taken to get an average
+			Eigen::Vector3f finalColour = totalColor / samplesPerPixel;
+
+			// Apply Gamma correction
+			// Converting linear RGB values into display space
+			const float invGamma = 1.0f / 2.2f;
+
+			// Convert final linear color to sRGB for display (gamma correction)
+			finalColour.x() = std::pow(finalColour.x(), invGamma);
+			finalColour.y() = std::pow(finalColour.y(), invGamma);
+			finalColour.z() = std::pow(finalColour.z(), invGamma);
+
+			// Clamp the average values
+			finalColour.x() = std::min(finalColour.x(), 1.f);
+			finalColour.y() = std::min(finalColour.y(), 1.f);
+			finalColour.z() = std::min(finalColour.z(), 1.f);
+
+			// Output the image using the final colour
+			int line = (pixHeight - scanlines[y]) - 1;
+			outImage[(x + line * pixWidth) * nChannels + 0] = finalColour.x() * 255;
+			outImage[(x + line * pixWidth) * nChannels + 1] = finalColour.y() * 255;
+			outImage[(x + line * pixWidth) * nChannels + 2] = finalColour.z() * 255;
+			outImage[(x + line * pixWidth) * nChannels + 3] = 255;
 		}
 		if (omp_get_thread_num() == omp_get_num_threads()-1) {
 			std::clog << "\rScanlines remaining: " << (pixHeight - y) << ' ' << std::flush;

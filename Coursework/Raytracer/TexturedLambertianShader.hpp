@@ -38,6 +38,11 @@ public:
 		albedo.y() = static_cast<float>((*albedoTexture_)[(pixX + texWidth_*pixY)*4 + 1]) / 255.f;
 		albedo.z() = static_cast<float>((*albedoTexture_)[(pixX + texWidth_*pixY)*4 + 2]) / 255.f;
 
+		// Converting sRGB (texture space) to linear space for correct lighting
+		albedo.x() = std::pow(albedo.x(), 2.2);
+		albedo.y() = std::pow(albedo.y(), 2.2);
+		albedo.z() = std::pow(albedo.z(), 2.2);
+
 		Eigen::Vector3f color = coefftWiseMul(albedo, ambientLight);
 
 		for (auto& light : lights) {
@@ -53,4 +58,3 @@ public:
 		return color;
 	}
 };
-
