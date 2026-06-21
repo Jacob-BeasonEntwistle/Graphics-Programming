@@ -2,7 +2,7 @@
 
 *Developed by Jacob Beason Entwistle as part of a Computer Graphics module.*
 
-![A Phasmophobia scene drawn using the custom-built rasteriser](Rendered_images/rasterised.png)
+![A Phasmophobia scene drawn using the custom-built rasteriser](Rendered_Images/rasterised.png)
 
 Each system explores different rendering techniques and pipelines, ranging from real-time rasterisation to physically-based ray tracing and reference path-traced rendering.
 
@@ -40,7 +40,7 @@ A CPU ray tracing system built around geometric intersection and physically-base
 
 #### Key capabilities:
 - Ray generation from a perspective camera
-- Ray–triangle intersection with hit resolution
+- Rayâ€“triangle intersection with hit resolution
 - Scene loading with geometry and materials
 - Texture and material-based shading
 
