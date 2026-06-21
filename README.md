@@ -2,6 +2,8 @@
 
 *Developed by Jacob Beason Entwistle as part of a Computer Graphics module.*
 
+![A Phasmophobia scene drawn using the custom-built rasteriser](Rendered_images/rasterised.png)
+
 Each system explores different rendering techniques and pipelines, ranging from real-time rasterisation to physically-based ray tracing and reference path-traced rendering.
 
 ## Overview
