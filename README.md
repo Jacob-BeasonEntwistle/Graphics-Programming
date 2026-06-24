@@ -4,7 +4,7 @@
 
 
 
-![A video of the rasterisation process - the scene is being drawn one triangle at a time](assets/readme_media/raytracer_output.png)(https://youtu.be/pZKkJ0uiXL4?si=OnBfrHW6FcZKMRDp)
+![A video of the rasterisation process - the scene is being drawn one triangle at a time](assets/readme_media/rasteriser_output_aberrated.png)(https://youtu.be/pZKkJ0uiXL4?si=OnBfrHW6FcZKMRDp)
 
 
 
@@ -39,7 +39,7 @@ This animation shows the rasteriser drawing each mesh in the scene (*Phasmophobi
 
 
 
-![A video of the rasterisation process](assets/readme_media/raytracer_output.png)(https://youtu.be/pZKkJ0uiXL4?si=OnBfrHW6FcZKMRDp)
+![A video of the rasterisation process](assets/readme_media/raytracer_output_aberrated.png)(https://youtu.be/pZKkJ0uiXL4?si=OnBfrHW6FcZKMRDp)
 
 
 
