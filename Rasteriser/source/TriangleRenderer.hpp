@@ -16,10 +16,10 @@ void findScreenBoundingBox(const Triangle& t, int width, int height, int& minX, 
 	maxY = std::max(std::max(t.screen[0].y(), t.screen[1].y()), t.screen[2].y());
 
 	// Constrain it to lie within the image.
-	minX = std::min(std::max(minX, 0), width - 1);
-	maxX = std::min(std::max(maxX, 0), width - 1);
-	minY = std::min(std::max(minY, 0), height - 1);
-	maxY = std::min(std::max(maxY, 0), height - 1);
+	minX = (int)std::floor(minX);
+	maxX = (int)std::ceil(maxX);
+	minY = (int)std::floor(minY);
+	maxY = (int)std::ceil(maxY);
 }
 
 void drawTriangle(std::vector<uint8_t>& image, int width, int height,
@@ -165,7 +165,12 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 			// Divide the total colour by the number of samples to get an average
 			Eigen::Vector3f finalColor = totalColor / validSamples;
 
+			if (x < 0 || x >= width || y < 0 || y >= height) {
+				continue;
+			}
+
 			int depthIdx = x + y * width;
+
 			if (closestDepth > zBuffer[depthIdx]) continue;
 			zBuffer[depthIdx] = closestDepth;
 
@@ -178,7 +183,7 @@ void drawTriangle(std::vector<uint8_t>& image, int width, int height,
 			c.a = 255;
 
 			int flippedX = width - x - 1;
-			if (flippedX < 0 || flippedX >= width) return;
+			if (flippedX < 0 || flippedX >= width) continue;
 
 			// Flip the x value of the pixel being drawn to draw the scene flipped horizontally
 			setPixel(image, flippedX, y, width, height, c);

@@ -3,6 +3,10 @@
 #include "Mesh.hpp"
 #include "Light.hpp"
 #include "Material.hpp"
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/hal/interface.h>
+
+extern cv::VideoWriter writer;
 
 void drawMesh(std::vector<unsigned char>& image,
 	std::vector<float>& zBuffer,
@@ -15,6 +19,13 @@ void drawMesh(std::vector<unsigned char>& image,
 	int width, int height,
 	const std::vector<uint8_t>& albedoTexture, int texWidth, int texHeight)
 {
+	cv::Mat lastFrame;
+	int trianglesDrawn = 0;
+	const int totalTriangles = mesh.vFaces.size();
+
+	// Saving the rasterising animation
+	cv::Mat prevImage;
+
 	for (int i = 0; i < mesh.vFaces.size(); ++i) {
 		Eigen::Vector3f
 			v0 = mesh.verts[mesh.vFaces[i][0]],
@@ -70,5 +81,57 @@ void drawMesh(std::vector<unsigned char>& image,
 		}
 
 		drawTriangle(image, width, height, zBuffer, t, lights, material, camWorldPos, albedoTexture, texWidth, texHeight);
+
+		++trianglesDrawn;
+
+		if (trianglesDrawn % 50 == 0) {
+			cv::Mat currImage(cv::Size(width, height), CV_8UC4, image.data());
+			cv::Mat currImageBGR;
+			cv::cvtColor(currImage, currImageBGR, cv::COLOR_RGBA2BGR);
+			
+			float percent = (float(trianglesDrawn) / float(totalTriangles)) * 100.0f;
+
+			std::string text =
+				"Rasterising: " + std::to_string(trianglesDrawn) +
+				" / " + std::to_string(totalTriangles) +
+				" (" + std::to_string(int(percent)) + "%)";
+
+			cv::putText(
+				currImageBGR,
+				text,
+				cv::Point(22, height - 52),
+				cv::FONT_HERSHEY_SIMPLEX,
+				1.0,
+				cv::Scalar(0, 0, 0),
+				2
+			);
+
+			cv::putText(
+				currImageBGR,
+				text,
+				cv::Point(20, height - 50),
+				cv::FONT_HERSHEY_SIMPLEX,
+				1.0,
+				cv::Scalar(255, 255, 255),
+				2
+			);
+
+			if (prevImage.empty()) {
+				// This is the first triangle drawn, so definitely save the image
+				writer.write(currImageBGR);
+				currImageBGR.copyTo(prevImage);
+			}
+			else {
+				// For subsequent images, check if the image is different to the previous one
+				cv::Scalar diff = cv::sum(currImageBGR - prevImage);
+				if (diff[0] != 0 || diff[1] != 0 || diff[2] != 0) {
+					// Image is different, so save it.
+					writer.write(currImageBGR);
+					currImageBGR.copyTo(prevImage);
+				}
+			}
+
+			lastFrame = currImageBGR.clone();
+		}
 	}
 }

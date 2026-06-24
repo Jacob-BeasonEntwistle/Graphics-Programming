@@ -21,6 +21,12 @@
 #include "Model.hpp"
 #include "ChromaticAberration.hpp"
 #include <fstream>
+#include <iomanip>
+
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/hal/interface.h>
+
+cv::VideoWriter writer;
 
 /// <summary>
 /// Load a JSON config file using the nlohmann library.
@@ -41,10 +47,16 @@ Eigen::Vector3f loadVec3FromConfig(const nlohmann::json& config)
 	return Eigen::Vector3f(config[0], config[1], config[2]);
 }
 
-// Returns a random float value between 0 and 1
-// Used for the jitter of Anti-Aliasing
-float randomFloat() {
-	return static_cast<float>(rand()) / RAND_MAX * 1.0f;
+//// Returns a random float value between 0 and 1
+//// Used for the jitter of Anti-Aliasing
+//float randomFloat() {
+//	return static_cast<float>(rand()) / RAND_MAX * 1.0f;
+//}
+
+float randomFloat_thread() {
+	thread_local std::mt19937 gen(std::random_device{}());
+	thread_local std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+	return dist(gen);
 }
 
 int main(int argc, char* argv[]) {
@@ -83,12 +95,12 @@ int main(int argc, char* argv[]) {
 	// --[Load shaders and textures]--
 	// Create a vector of paths for the textures to be loaded
 	std::vector<std::string> texturePaths;
-	texturePaths.push_back("../../../textures/Leather030_Color.png");	// [0]
-	texturePaths.push_back("../../../textures/Carpet016_Color.png");	// [1]
-	texturePaths.push_back("../../../textures/Plaster001_Color.png");	// [2]
-	texturePaths.push_back("../../../textures/Wood066_Color.png");		// [3]
-	texturePaths.push_back("../../../textures/Wood095_Color.png");		// [4]
-	texturePaths.push_back("../../../textures/Plastic011_Color.png");	// [5]
+	texturePaths.push_back("../../assets/textures/Leather030_Color.png");	// [0]
+	texturePaths.push_back("../../assets/textures/Carpet016_Color.png");	// [1]
+	texturePaths.push_back("../../assets/textures/Plaster001_Color.png");	// [2]
+	texturePaths.push_back("../../assets/textures/Wood066_Color.png");		// [3]
+	texturePaths.push_back("../../assets/textures/Wood095_Color.png");		// [4]
+	texturePaths.push_back("../../assets/textures/Plastic011_Color.png");	// [5]
 
 	// Create vectors of the textures, widths, and heights to store the values for later use
 	std::vector<std::vector<uint8_t>> textures;
@@ -145,31 +157,31 @@ int main(int argc, char* argv[]) {
 	scene.renderables.push_back(std::make_shared<Mesh>(&spotShader, &spotModel));
 	scene.renderables.back()->modelToWorld(rotateY(M_PI / 4.0f));*/
 
-	Model roomModel("../../../models/Room_complete.obj");
+	Model roomModel("../../assets/models/Room_complete.obj");
 	scene.renderables.push_back(std::make_shared<BVHNode>(roomModel, &plasterTexLambertianShader, 4, rotateY(M_PI)));
 
-	Model bookshelfModel("../../../models/Bookshelf.obj");
+	Model bookshelfModel("../../assets/models/Bookshelf.obj");
 	scene.renderables.push_back(std::make_shared<BVHNode>(bookshelfModel, &DarkWoodTexPhongShader, 4, rotateY(M_PI)));
 
-	Model coffeeTableModel("../../../models/CoffeeTable.obj");
+	Model coffeeTableModel("../../assets/models/CoffeeTable.obj");
 	scene.renderables.push_back(std::make_shared<BVHNode>(coffeeTableModel, &DarkWoodTexPhongShader, 4, rotateY(M_PI)));
 
-	Model shelfModel("../../../models/Shelf.obj");
+	Model shelfModel("../../assets/models/Shelf.obj");
 	scene.renderables.push_back(std::make_shared<BVHNode>(shelfModel, &LightWoodTexPhongShader, 4, rotateY(M_PI)));
 
-	Model sofaModel("../../../models/Sofa.obj");
+	Model sofaModel("../../assets/models/Sofa.obj");
 	scene.renderables.push_back(std::make_shared<BVHNode>(sofaModel, &leatherTexLambertianShader, 4, rotateY(M_PI)));
 
-	Model tvModel("../../../models/TV.obj");
+	Model tvModel("../../assets/models/TV.obj");
 	scene.renderables.push_back(std::make_shared<BVHNode>(tvModel, &plasticPhongShader, 4, rotateY(M_PI)));
 
-	Model tvStandModel("../../../models/TVStand.obj");
+	Model tvStandModel("../../assets/models/TVStand.obj");
 	scene.renderables.push_back(std::make_shared<BVHNode>(tvStandModel, &LightWoodTexPhongShader, 4, rotateY(M_PI)));
 
-	Model windowFrameModel("../../../models/WindowFrame.obj");
+	Model windowFrameModel("../../assets/models/WindowFrame.obj");
 	scene.renderables.push_back(std::make_shared<BVHNode>(windowFrameModel, &LightWoodTexPhongShader, 4, rotateY(M_PI)));
 
-	Model windowPaneModel("../../../models/WindowPane.obj");
+	Model windowPaneModel("../../assets/models/WindowPane.obj");
 	scene.renderables.push_back(std::make_shared<BVHNode>(windowPaneModel, &glassShader, 4, rotateY(M_PI)));
 
 	// --[Add lights to scene]--
@@ -184,31 +196,46 @@ int main(int argc, char* argv[]) {
 	std::vector<unsigned int> scanlines(pixHeight);
 	for (int i = 0; i < pixHeight; ++i) scanlines[i] = i;
 
-	if (config["shuffleScanlines"]) {
+	/*if (config["shuffleScanlines"]) {
 		std::random_device rd;
 		std::mt19937 g(rd());
 		std::shuffle(scanlines.begin(), scanlines.end(), g);
-	}
+	}*/
 
 	auto startTime = std::chrono::steady_clock::now();
+
+	// Accumulation buffer (for animation)
+	std::vector<Eigen::Vector3f> accumulation(pixWidth* pixHeight, Eigen::Vector3f::Zero());
+
+	writer = cv::VideoWriter("raytrace.mp4", cv::VideoWriter::fourcc('m', 'p', '4', 'v'), 30, cv::Size(pixWidth, pixHeight));
+
+	if (!writer.isOpened()) {
+		std::cout << "ERROR: VideoWriter failed!" << std::endl;
+		return -1;
+	}
+
+	cv::Mat lastFrame;
+
+	std::atomic<int> completedLines(0);
 
 	// Anti-Aliasing using stochastic supersampling (SSAA)
 	// Reducing the number of samples reduces the affect of the AA but increases the render time
 	// Increasing the num of samples increases the affect of AA but increases render time
-	int samplesPerPixel = 32;
+	int samplesPerPixel = 24;
+
+	for (int sample = 0; sample < samplesPerPixel; sample++) {
+		completedLines = 0;
 
 	// Threading disabled to allow random function of AA to work as intended - creating multiple rays with random offsets
-	//#pragma omp parallel for
-	for (int y = 0; y < pixHeight; ++y) {
-		for (int x = 0; x < pixWidth; ++x) {
-			// Anti-Aliasing implemented using stochastic (random) supersampling
-			Eigen::Vector3f totalColor(0.0f, 0.0f, 0.0f);	// Create a total colour variable
-
-			// For each sample taken per pixel
-			for (int s = 0; s < samplesPerPixel; s++) {
+	#pragma omp parallel for
+		for (int y = 0; y < pixHeight; ++y) {
+			for (int x = 0; x < pixWidth; ++x) {
+				// Anti-Aliasing implemented using stochastic (random) supersampling
+								
 				// Generate a random jittered pixel offsets (stochastic SSAA)
-				float jitterX = x + randomFloat() - 0.5f;
-				float jitterY = scanlines[y] + randomFloat() - 0.5f;
+				float jitterX = x + randomFloat_thread() - 0.5f;
+				//float jitterY = scanlines[y] + randomFloat() - 0.5f;
+				float jitterY = y + randomFloat_thread() - 0.5f;
 
 				// ::DEBUGGING:: to test whether the jitter values are changing
 				/*if (x == pixWidth / 2 && y == pixHeight / 2 && s < 5) {
@@ -234,86 +261,116 @@ int main(int argc, char* argv[]) {
 						0, config["maxBounces"]);
 
 					// And add it to the total colour
-					totalColor += color;
+					accumulation[x + y * pixWidth] += color;
 				}
 				else {
 					// If ray misses an object in the scene, it returns black
 					Eigen::Vector3f color(0.0f, 0.0f, 0.0f);
 					// Black is still added to the total colour
-					totalColor += color;
+					accumulation[x + y * pixWidth] += color;
 				}
+
 			}
 
-			// Divide the total colour value by the number of samples taken to get an average
-			Eigen::Vector3f finalColour = totalColor / samplesPerPixel;
+			int done = completedLines.fetch_add(1) + 1;
 
-			// Apply Gamma correction
-			// Converting linear RGB values into display space
-			const float invGamma = 1.0f / 2.2f;
+			float percent = (done / float(pixHeight)) * 100.0f;
 
-			// Convert final linear color to sRGB for display (gamma correction)
-			finalColour.x() = std::pow(finalColour.x(), invGamma);
-			finalColour.y() = std::pow(finalColour.y(), invGamma);
-			finalColour.z() = std::pow(finalColour.z(), invGamma);
-
-			// Clamp the average values
-			finalColour.x() = std::min(finalColour.x(), 1.f);
-			finalColour.y() = std::min(finalColour.y(), 1.f);
-			finalColour.z() = std::min(finalColour.z(), 1.f);
-
-			// Output the image using the final colour
-			int line = (pixHeight - scanlines[y]) - 1;
-			outImage[(x + line * pixWidth) * nChannels + 0] = finalColour.x() * 255;
-			outImage[(x + line * pixWidth) * nChannels + 1] = finalColour.y() * 255;
-			outImage[(x + line * pixWidth) * nChannels + 2] = finalColour.z() * 255;
-			outImage[(x + line * pixWidth) * nChannels + 3] = 255;
+			if (done % 20 == 0) {
+				std::cout << "\r[Sample " << sample + 1
+					<< " / " << samplesPerPixel
+					<< "] " << std::fixed << std::setprecision(1) << percent << "%"
+					<< "  " << std::flush;
+			}
+			if (done == pixHeight) {
+				std::cout << "\r[Sample " << sample + 1
+					<< " / " << samplesPerPixel
+					<< "] " << "100.0%"
+					<< "  " << std::flush;
+			}
 		}
-		if (omp_get_thread_num() == omp_get_num_threads()-1) {
-			std::clog << "\rScanlines remaining: " << (pixHeight - y) << ' ' << std::flush;
+
+		std::cout << std::endl;
+
+		for (int y = 0; y < pixHeight; y++) {
+			for (int x = 0; x < pixWidth; x++) {
+				Eigen::Vector3f col = accumulation[x + y * pixWidth] / float(sample + 1);
+
+				if (sample < 5) {
+					float factor = 0.4f + 0.15f * sample;
+					col *= factor;	// Darker -> looks noisier
+				}
+
+				if (sample < 3) {
+					float noise = randomFloat_thread() * 0.12f;
+					col += col.cwiseProduct(Eigen::Vector3f(noise, noise, noise));
+				}
+				
+				if (sample > 4) {
+					col = col.cwiseMin(1.0f);
+				}
+
+				// Gamma correction
+				if (sample < 4) {
+					col = col.array().pow(1.0f / 1.6f);
+				}
+				else {
+					col = col.array().pow(1.0f / 2.2f);
+				}
+
+				int flippedY = pixHeight - 1 - y;
+				int idx = (x + flippedY * pixWidth) * 4;
+
+				outImage[idx + 0] = std::min(col.x(), 1.0f) * 255;
+				outImage[idx + 1] = std::min(col.y(), 1.0f) * 255;
+				outImage[idx + 2] = std::min(col.z(), 1.0f) * 255;
+				outImage[idx + 3] = 255;
+			}
 		}
+
+		cv::Mat frame(pixHeight, pixWidth, CV_8UC4, outImage.data());
+		cv::Mat bgr;
+		cv::cvtColor(frame, bgr, cv::COLOR_RGBA2BGR);
+
+		float progress = float(sample + 1) / samplesPerPixel * 100.0f;
+
+		std::string text =
+			"Sample " + std::to_string(sample + 1) +
+			" / " + std::to_string(samplesPerPixel) +
+			" (" + std::to_string(int(progress)) + "%)";
+
+		cv::putText(
+			bgr,
+			text,
+			cv::Point(22, pixHeight - 52),
+			cv::FONT_HERSHEY_SIMPLEX,
+			1.0,
+			cv::Scalar(0, 0, 0),
+			2
+		);
+
+		cv::putText(
+			bgr,
+			text,
+			cv::Point(20, pixHeight - 50),
+			cv::FONT_HERSHEY_SIMPLEX,
+			1.0,
+			cv::Scalar(255, 255, 255),
+			2
+		);
+
+		int repeats = (sample < 5) ? 8 : 2;
+		for (int i = 0; i < repeats; i++) {
+			writer.write(bgr);
+		}
+
+		lastFrame = bgr.clone();
 	}
 
-	/*Inline code for Chromatic Aberration
-	
-	float unchangedRadius = 500.0f;
-	float slopeR = 1.0f, slopeG = .95f, slopeB = .9f;
-
-	for (int y = 0; y < pixHeight; ++y) {
-		for (int x = 0; x < pixWidth; ++x) {
-			float xDist = x - pixWidth / 2;
-			float yDist = y - pixHeight / 2;
-
-			float radius = sqrt(xDist * xDist + yDist * yDist);
-
-			if (radius < unchangedRadius) {
-				for (int c = 0; c < nChannels; c++) {
-					outImageChromatic[(x + y * pixWidth) * nChannels + c] = outImage[(x + y * pixWidth) * nChannels + c];
-				}
-			}
-			else {
-				float redRadius = chromaticAberration(radius, slopeR, unchangedRadius);
-				float greenRadius = chromaticAberration(radius, slopeG, unchangedRadius);
-				float blueRadius = chromaticAberration(radius, slopeB, unchangedRadius);
-
-				float xNorm = xDist / radius;
-				float yNorm = yDist / radius;
-
-				int rX = pixWidth / 2 + xNorm * redRadius;
-				int rY = pixHeight / 2 + yNorm * redRadius;
-
-				int gX = pixWidth / 2 + xNorm * greenRadius;
-				int gY = pixHeight / 2 + yNorm * greenRadius;
-
-				int bX = pixWidth / 2 + xNorm * blueRadius;
-				int bY = pixHeight / 2 + yNorm * blueRadius;
-
-				outImageChromatic[(x + y * pixWidth) * nChannels + 0] = outImage[(rX + rY * pixWidth) * nChannels + 0];
-				outImageChromatic[(x + y * pixWidth) * nChannels + 1] = outImage[(gX + gY * pixWidth) * nChannels + 1];
-				outImageChromatic[(x + y * pixWidth) * nChannels + 2] = outImage[(bX + bY * pixWidth) * nChannels + 2];
-				outImageChromatic[(x + y * pixWidth) * nChannels + 3] = outImage[(x + y * pixWidth) * nChannels + 3];
-			}
-		}
-	}*/
+	// Hold final frame for ~2 seconds
+	for (int i = 0; i < 60; i++) {  // 60 frames @ 30fps = 2 seconds
+		writer.write(lastFrame);
+	}
 
 	// Initialise the chromatic aberration with the unchangedRadius, and different slopes for each RGB channel
 	ChromaticAberration ca(500.0f, 1.0f, 0.95f, 0.9f);

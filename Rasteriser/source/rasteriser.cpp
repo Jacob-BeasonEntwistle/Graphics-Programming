@@ -9,6 +9,11 @@
 #include "Material.hpp"
 #include "ChromaticAberration.hpp"
 
+#include <opencv2/opencv.hpp>
+
+cv::VideoWriter writer;
+cv::Mat finalSceneFrame;
+
 Eigen::Matrix4f projectionMatrix(int height, int width, float horzFov = 70.f * M_PI / 180.f, float zFar = 10.f, float zNear = 0.1f)
 {
 	float vertFov = horzFov * float(height) / width;
@@ -71,6 +76,14 @@ int main()
 	const int width = 1920, height = 1080;
 	const int nChannels = 4;
 
+	//						Filename	 |		video codec (compression algorithm)   | framerate | video width and height
+	writer = cv::VideoWriter("output.mp4", cv::VideoWriter::fourcc('m', 'p', '4', 'v'), 24, cv::Size(width, height));
+
+	if (!writer.isOpened()) {
+		std::cout << "ERROR: VideoWriter failed to open!" << std::endl;
+		return -1;
+	}
+
 	// Set up an image buffer
 	std::vector<uint8_t> imageBuffer(height * width * nChannels);
 	std::vector<uint8_t> imageBufferChromatic(height * width * nChannels);
@@ -104,38 +117,38 @@ int main()
 
 
 	// --[SETTING THE FILENAMES OF EACH OBJECT]--
-	std::string roomFilename = "../../../models/Room.obj";
-	std::string floorFilename = "../../../models/Floor.obj";
-	std::string bookshelfFilename = "../../../models/Bookshelf.obj";
-	std::string coffeetableFilename = "../../../models/CoffeeTable.obj";
-	std::string shelfFilename = "../../../models/Shelf.obj";
-	std::string sofaFilename = "../../../models/Sofa.obj";
-	std::string tvFilename = "../../../models/TV.obj";
-	std::string tvstandFilename = "../../../models/TVStand.obj";
-	std::string windowframeFilename = "../../../models/WindowFrame.obj";
-	std::string windowpaneFilename = "../../../models/WindowPane.obj";
+	std::string roomFilename = "../../assets/models/Room.obj";
+	std::string floorFilename = "../../assets/models/Floor.obj";
+	std::string bookshelfFilename = "../../assets/models/Bookshelf.obj";
+	std::string coffeetableFilename = "../../assets/models/CoffeeTable.obj";
+	std::string shelfFilename = "../../assets/models/Shelf.obj";
+	std::string sofaFilename = "../../assets/models/Sofa.obj";
+	std::string tvFilename = "../../assets/models/TV.obj";
+	std::string tvstandFilename = "../../assets/models/TVStand.obj";
+	std::string windowframeFilename = "../../assets/models/WindowFrame.obj";
+	std::string windowpaneFilename = "../../assets/models/WindowPane.obj";
 
 
 	// --[CREATING THE TEXTURES FOR EACH OBJECT]--
 	std::vector<uint8_t> leatherTexture;
 	unsigned int leatherTexWidth, leatherTexHeight;
-	lodepng::decode(leatherTexture, leatherTexWidth, leatherTexHeight, "../../../textures/Leather030_Color.png");
+	lodepng::decode(leatherTexture, leatherTexWidth, leatherTexHeight, "../../assets/textures/Leather030_Color.png");
 
 	std::vector<uint8_t> carpetTexture;
 	unsigned int carpetTexWidth, carpetTexHeight;
-	lodepng::decode(carpetTexture, carpetTexWidth, carpetTexHeight, "../../../textures/Carpet016_Color.png");
+	lodepng::decode(carpetTexture, carpetTexWidth, carpetTexHeight, "../../assets/textures/Carpet016_Color.png");
 
 	std::vector<uint8_t> plasterTexture;
 	unsigned int plasterTexWidth, plasterTexHeight;
-	lodepng::decode(plasterTexture, plasterTexWidth, plasterTexHeight, "../../../textures/Plaster001_Color.png");
+	lodepng::decode(plasterTexture, plasterTexWidth, plasterTexHeight, "../../assets/textures/Plaster001_Color.png");
 
 	std::vector<uint8_t> woodLightTexture;
 	unsigned int woodLightTexWidth, woodLightTexHeight;
-	lodepng::decode(woodLightTexture, woodLightTexWidth, woodLightTexHeight, "../../../textures/Wood095_Color.png");
+	lodepng::decode(woodLightTexture, woodLightTexWidth, woodLightTexHeight, "../../assets/textures/Wood095_Color.png");
 
 	std::vector<uint8_t> woodDarkTexture;
 	unsigned int woodDarkTexWidth, woodDarkTexHeight;
-	lodepng::decode(woodDarkTexture, woodDarkTexWidth, woodDarkTexHeight, "../../../textures/Wood066_Color.png");
+	lodepng::decode(woodDarkTexture, woodDarkTexWidth, woodDarkTexHeight, "../../assets/textures/Wood066_Color.png");
 
 
 	// --[CREATING THE LIGHTS]--
@@ -167,50 +180,70 @@ int main()
 	drawMesh(imageBuffer, zBuffer, roomMesh, roomMaterial, camWorldPos,
 		roomTransform, worldToClip, lights, width, height, plasterTexture, plasterTexWidth, plasterTexHeight);
 
+	finalSceneFrame = cv::Mat(height, width, CV_8UC4, imageBuffer.data()).clone();
+
 	Eigen::Matrix4f floorTransform;
 	floorTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, floorMesh, floorMaterial, camWorldPos,
 		floorTransform, worldToClip, lights, width, height, carpetTexture, carpetTexWidth, carpetTexHeight);
+	
+	finalSceneFrame = cv::Mat(height, width, CV_8UC4, imageBuffer.data()).clone();
 
 	Eigen::Matrix4f bookshelfTransform;
 	bookshelfTransform = translationMatrix(sceneOrigin - Eigen::Vector3f(0.05f, 0.0f, 0.0f)) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, bookshelfMesh, bookshelfMaterial, camWorldPos,
 		bookshelfTransform, worldToClip, lights, width, height, woodDarkTexture, woodDarkTexWidth, woodDarkTexHeight);
 
+	finalSceneFrame = cv::Mat(height, width, CV_8UC4, imageBuffer.data()).clone();
+
 	Eigen::Matrix4f coffeetableTransform;
 	coffeetableTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, coffeetableMesh, coffeeTableMaterial, camWorldPos,
 		coffeetableTransform, worldToClip, lights, width, height, woodDarkTexture, woodDarkTexWidth, woodDarkTexHeight);
+
+	finalSceneFrame = cv::Mat(height, width, CV_8UC4, imageBuffer.data()).clone();
 
 	Eigen::Matrix4f shelfTransform;
 	shelfTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, shelfMesh, shelfMaterial, camWorldPos,
 		shelfTransform, worldToClip, lights, width, height, woodLightTexture, woodLightTexWidth, woodLightTexHeight);
 
+	finalSceneFrame = cv::Mat(height, width, CV_8UC4, imageBuffer.data()).clone();
+
 	Eigen::Matrix4f sofaTransform;
 	sofaTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, sofaMesh, sofaMaterial, camWorldPos,
 		sofaTransform, worldToClip, lights, width, height, leatherTexture, leatherTexWidth, leatherTexHeight);
+
+	finalSceneFrame = cv::Mat(height, width, CV_8UC4, imageBuffer.data()).clone();
 
 	Eigen::Matrix4f tvTransform;
 	tvTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, tvMesh, tvMaterial, camWorldPos,
 		tvTransform, worldToClip, lights, width, height, plasterTexture, plasterTexWidth, plasterTexHeight);
 
+	finalSceneFrame = cv::Mat(height, width, CV_8UC4, imageBuffer.data()).clone();
+
 	Eigen::Matrix4f tvStandTransform;
 	tvStandTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, tvstandMesh, tvStandMaterial, camWorldPos,
 		tvStandTransform, worldToClip, lights, width, height, woodLightTexture, woodLightTexWidth, woodLightTexHeight);
+
+	finalSceneFrame = cv::Mat(height, width, CV_8UC4, imageBuffer.data()).clone();
 
 	Eigen::Matrix4f windowframeTransform;
 	windowframeTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, windowframeMesh, windowFrameMaterial, camWorldPos,
 		windowframeTransform, worldToClip, lights, width, height, woodLightTexture, woodLightTexWidth, woodLightTexHeight);
 
+	finalSceneFrame = cv::Mat(height, width, CV_8UC4, imageBuffer.data()).clone();
+
 	Eigen::Matrix4f windowpaneTransform;
 	windowpaneTransform = translationMatrix(sceneOrigin) * rotateYMatrix(M_PI) * scaleMatrix(1.0f);
 	drawMesh(imageBuffer, zBuffer, windowpaneMesh, windowPaneMaterial, camWorldPos,
 		windowpaneTransform, worldToClip, lights, width, height, plasterTexture, plasterTexWidth, plasterTexHeight);
+
+	finalSceneFrame = cv::Mat(height, width, CV_8UC4, imageBuffer.data()).clone();
 
 	// For debug - draw point lights as colored circles so we can see where they are
 	drawPointLights(imageBuffer, width, height, lights);
@@ -247,6 +280,39 @@ int main()
 			std::cout << "lodepng error encoding image: " << lodepng_error_text(errorCode) << std::endl;
 			return errorCode;
 		}
+
+
+	if (!finalSceneFrame.empty()) {
+		cv::Mat finalBGR;
+		cv::cvtColor(finalSceneFrame, finalBGR, cv::COLOR_RGBA2BGR);
+
+		for (int i = 0; i < 60; i++) { // 2 seconds at 24fps
+			writer.write(finalBGR);
+
+			std::string text =
+				"Rasterisation Complete! (100%)";
+
+			cv::putText(
+				finalBGR,
+				text,
+				cv::Point(22, height - 52),
+				cv::FONT_HERSHEY_SIMPLEX,
+				1.0,
+				cv::Scalar(0, 0, 0),
+				2
+			);
+
+			cv::putText(
+				finalBGR,
+				text,
+				cv::Point(20, height - 50),
+				cv::FONT_HERSHEY_SIMPLEX,
+				1.0,
+				cv::Scalar(255, 255, 255),
+				2
+			);
+		}
+	}
 
     return 0;
 }

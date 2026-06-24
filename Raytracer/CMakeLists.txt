@@ -5,6 +5,10 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 find_package(OpenMP)
 
+find_package(OpenCV REQUIRED)
+
+include_directories(${OpenCV_INCLUDE_DIRS})
+
 add_subdirectory(3rdParty)
 
 set(ENTITIES_SOURCE_GROUP
@@ -66,12 +70,15 @@ add_executable(main
 
 
 if(OpenMP_CXX_FOUND)
-    target_link_libraries(main PUBLIC OpenMP::OpenMP_CXX lodepng)
-else()
-    target_link_libraries(main lodepng)
+    target_link_libraries(main PUBLIC OpenMP::OpenMP_CXX)
 endif()
 
-include_directories(../../3rdParty/eigen-3.4.0)
-include_directories(3rdParty/lodepng)
-include_directories(../../3rdParty/nlohmann)
+target_link_libraries(main
+    PUBLIC
+        lodepng
+        ${OpenCV_LIBS}
+)
 
+include_directories(../assets/3rdParty/eigen-3.4.0)
+include_directories(3rdParty/lodepng)
+include_directories(../assets/3rdParty/nlohmann)
