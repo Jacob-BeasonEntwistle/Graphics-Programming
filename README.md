@@ -4,7 +4,7 @@
 
 
 
-![Video of the rasterisation process - the scene is being drawn one triangle at a time](https://youtu.be/pZKkJ0uiXL4?si=OnBfrHW6FcZKMRDp)
+assets/readme_media/raytracer_output.png](https://youtu.be/pZKkJ0uiXL4?si=OnBfrHW6FcZKMRDp)
 
 
 
@@ -31,7 +31,7 @@ A software rasterisation renderer implementing a traditional graphics pipeline f
 
 | Without Chromatic Aberration | With Chromatic Aberration |
 | - | - |
-| ![Rasterised output without chromatic aberration](./assets/readme_media/rasteriser_output.png) | ![Rasterised output with chromatic aberration](assets/readme_media/rasteriser_output_aberrated.png) |
+| ![Rasterised output without chromatic aberration](assets/readme_media/rasteriser_output.png) | ![Rasterised output with chromatic aberration](assets/readme_media/rasteriser_output_aberrated.png) |
 
 **Rasterisation process (mesh-by-mesh draw order)**
 
@@ -39,7 +39,7 @@ This animation shows the rasteriser drawing each mesh in the scene (*Phasmophobi
 
 
 
-![Video of the rasterisation process](https://youtu.be/pZKkJ0uiXL4?si=OnBfrHW6FcZKMRDp)
+assets/readme_media/raytracer_output.png](https://youtu.be/pZKkJ0uiXL4?si=OnBfrHW6FcZKMRDp)
 
 
 
@@ -72,7 +72,7 @@ A CPU ray tracing system built around geometric intersection and physically-base
 
 
 
-![Video of the ray tracing process - the scene is being drawn and refined one ray at a time](https://youtu.be/MzGwOX48eHw?si=UKfxMlsCboZPzwx5)
+assets/readme_media/raytracer_output.png](https://youtu.be/MzGwOX48eHw?si=UKfxMlsCboZPzwx5)
 
 
 
