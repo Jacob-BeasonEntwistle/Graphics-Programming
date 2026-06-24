@@ -27,7 +27,7 @@ A software rasterisation renderer implementing a traditional graphics pipeline f
 
 | Without Chromatic Aberration | With Chromatic Aberration |
 | - | - |
-| ![Rasterised output without chromatic aberration](assets/readme_media/rasterised_output.png) | ![Rasterised output with chromatic aberration](assets/readme_media/rasterised_output_aberrated.png) |
+| ![Rasterised output without chromatic aberration](./assets/readme_media/rasteriser_output.png) | ![Rasterised output with chromatic aberration](assets/readme_media/rasteriser_output_aberrated.png) |
 
 **Rasterisation process (mesh-by-mesh draw order)**
 
