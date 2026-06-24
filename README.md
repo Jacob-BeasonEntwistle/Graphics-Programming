@@ -2,7 +2,11 @@
 
 *Developed by Jacob Beason Entwistle as part of a Computer Graphics module.*
 
-https://github.com/user-attachments/assets/b1a74660-75e9-4244-9e6e-6eecb22c578c
+
+
+https://github.com/user-attachments/assets/db6abf72-f608-4175-a951-228048971c1b
+
+
 
 Each system explores different rendering techniques and pipelines, ranging from real-time rasterisation to physically-based ray tracing and reference path-traced rendering.
 
@@ -33,7 +37,11 @@ A software rasterisation renderer implementing a traditional graphics pipeline f
 
 This animation shows the rasteriser drawing each mesh in the scene (*Phasmophobia - 6 Tanglewood Drive, living room*), illustrating draw order, depth testing, and material assignment.
 
-https://github.com/user-attachments/assets/b1a74660-75e9-4244-9e6e-6eecb22c578c
+
+
+https://github.com/user-attachments/assets/55c9feec-f0f6-4d3d-94f4-3135fddcc384
+
+
 
 #### Key capabilities:
 
@@ -62,7 +70,11 @@ A CPU ray tracing system built around geometric intersection and physically-base
 
 **Ray tracing process (progressive refinement)**
 
-https://github.com/user-attachments/assets/7c441ab1-8596-4552-9719-cf1c565a32f8
+
+
+https://github.com/user-attachments/assets/e301f42f-694a-431f-af75-d37433933d2f
+
+
 
 #### Key capabilities:
 - Ray generation from a perspective camera
