@@ -2,7 +2,7 @@
 
 *Developed by Jacob Beason Entwistle as part of a Computer Graphics module.*
 
-https://github.com/user-attachments/assets/b1a74660-75e9-4244-9e6e-6eecb22c578c
+![Video of the rasterisation process - the scene is being drawn one triangle at a time](https://github.com/user-attachments/assets/b1a74660-75e9-4244-9e6e-6eecb22c578c)
 
 Each system explores different rendering techniques and pipelines, ranging from real-time rasterisation to physically-based ray tracing and reference path-traced rendering.
 
@@ -27,13 +27,13 @@ A software rasterisation renderer implementing a traditional graphics pipeline f
 
 | Without Chromatic Aberration | With Chromatic Aberration |
 | - | - |
-| !assets/readme_media/rasterised_output.png | !assets/readme_media/rasterised_output_aberrated.png |
+| ![Rasterised output without chromatic aberration](assets/readme_media/rasterised_output.png) | ![Rasterised output with chromatic aberration](assets/readme_media/rasterised_output_aberrated.png) |
 
 **Rasterisation process (mesh-by-mesh draw order)**
 
 This animation shows the rasteriser drawing each mesh in the scene (*Phasmophobia - 6 Tanglewood Drive, living room*), illustrating draw order, depth testing, and material assignment.
 
-https://github.com/user-attachments/assets/b1a74660-75e9-4244-9e6e-6eecb22c578c
+![Video of the rasterisation process](https://github.com/user-attachments/assets/b1a74660-75e9-4244-9e6e-6eecb22c578c)
 
 #### Key capabilities:
 
@@ -58,11 +58,11 @@ A CPU ray tracing system built around geometric intersection and physically-base
 
 | Without Chromatic Aberration | With Chromatic Aberration |
 | - | - |
-| !assets/readme_media/raytracer_output.png | !assets/readme_media/raytracer_output_aberrated.png |
+| ![Ray traced output without chromatic aberration](assets/readme_media/raytracer_output.png) | ![Ray traced output with chromatic aberration](assets/readme_media/raytracer_output_aberrated.png) |
 
 **Ray tracing process (progressive refinement)**
 
-https://github.com/user-attachments/assets/7c441ab1-8596-4552-9719-cf1c565a32f8
+![Video of the ray tracing process - the scene is being drawn and refined one ray at a time](https://github.com/user-attachments/assets/7c441ab1-8596-4552-9719-cf1c565a32f8)
 
 #### Key capabilities:
 - Ray generation from a perspective camera
