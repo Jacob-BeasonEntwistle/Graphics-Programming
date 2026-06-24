@@ -4,7 +4,7 @@
 
 
 
-assets/readme_media/raytracer_output.png](https://youtu.be/pZKkJ0uiXL4?si=OnBfrHW6FcZKMRDp)
+![A video of the rasterisation process - the scene is being drawn one triangle at a time](assets/readme_media/raytracer_output.png)(https://youtu.be/pZKkJ0uiXL4?si=OnBfrHW6FcZKMRDp)
 
 
 
@@ -39,7 +39,7 @@ This animation shows the rasteriser drawing each mesh in the scene (*Phasmophobi
 
 
 
-assets/readme_media/raytracer_output.png](https://youtu.be/pZKkJ0uiXL4?si=OnBfrHW6FcZKMRDp)
+![A video of the rasterisation process](assets/readme_media/raytracer_output.png)(https://youtu.be/pZKkJ0uiXL4?si=OnBfrHW6FcZKMRDp)
 
 
 
@@ -72,7 +72,7 @@ A CPU ray tracing system built around geometric intersection and physically-base
 
 
 
-assets/readme_media/raytracer_output.png](https://youtu.be/MzGwOX48eHw?si=UKfxMlsCboZPzwx5)
+![A video of the ray tracing process - the scene is being drawn and refined one ray at a time](assets/readme_media/raytracer_output.png)(https://youtu.be/MzGwOX48eHw?si=UKfxMlsCboZPzwx5)
 
 
 
