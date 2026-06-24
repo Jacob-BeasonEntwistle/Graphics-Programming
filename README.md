@@ -4,7 +4,7 @@
 
 
 
-https://github.com/user-attachments/assets/01e15dd1-0b4b-48a3-8825-47a6324f9341
+![Video of the rasterisation process - the scene is being drawn one triangle at a time](https://youtu.be/pZKkJ0uiXL4?si=OnBfrHW6FcZKMRDp)
 
 
 
@@ -39,7 +39,7 @@ This animation shows the rasteriser drawing each mesh in the scene (*Phasmophobi
 
 
 
-https://github.com/user-attachments/assets/55c9feec-f0f6-4d3d-94f4-3135fddcc384
+![Video of the rasterisation process](https://youtu.be/pZKkJ0uiXL4?si=OnBfrHW6FcZKMRDp)
 
 
 
@@ -72,7 +72,7 @@ A CPU ray tracing system built around geometric intersection and physically-base
 
 
 
-https://github.com/user-attachments/assets/e301f42f-694a-431f-af75-d37433933d2f
+![Video of the ray tracing process - the scene is being drawn and refined one ray at a time](https://youtu.be/MzGwOX48eHw?si=UKfxMlsCboZPzwx5)
 
 
 
